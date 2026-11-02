@@ -21,4 +21,4 @@ Die PBX entscheidet anhand des aktiven Profils, welche Geräte für **neue einge
 
 `DeviceProfiles.Tests` prüft Standard/null, Fremdgeräte, doppelte/fehlende Profile, Bearbeiten/Anlegen/Löschen, leere Auswahlen, Kapazität, bestätigte Schreibantworten, Revisionskonflikte und Antworten nach Abmeldung. Die explizite Debug-Designvorschau verwendet drei synthetische Geräte und Profile; Änderungen dort bleiben im Speicher und erzeugen keine Konto- oder SIP-Anfragen. Ein echter geräteübergreifender Klingeltest erfordert angemeldete Geräte und einen eingehenden Testanruf.
 
-Referenzvertrag: [Mac-Implementierung](https://github.com/ivama-dev/fonado-ai-macos/blob/c86f05a3bf1b932f6481280abf8c848ffccd7a25/Shared/TeamMember.swift).
+Referenzvertrag: [Mac-Implementierung](https://github.com/ivama-dev/fonado-macos/blob/c86f05a3bf1b932f6481280abf8c848ffccd7a25/Shared/TeamMember.swift).
