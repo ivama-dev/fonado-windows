@@ -1,0 +1,32 @@
+name: Collect pinned public SDK sources
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - evidence/sdk-source-probe-20261111
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Fetch and verify the three fixed public revisions
+        run: python3 .github/scripts/collect-sdk-sources.py
+      - name: Preserve source evidence, including an unsuccessful probe result
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fonado-pinned-sdk-sources-${{ github.run_id }}
+          path: artifacts/sdk-source-probe/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          include-hidden-files: false
