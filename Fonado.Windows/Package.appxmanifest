@@ -3,7 +3,7 @@
          xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
          xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
          IgnorableNamespaces="uap rescap">
-  <Identity Name="Fonoo.fonoo" Publisher="CN=650F94F0-5748-40C0-A4DB-FE00BDA46215" Version="0.1.1.0" />
+  <Identity Name="Fonoo.fonoo" Publisher="CN=650F94F0-5748-40C0-A4DB-FE00BDA46215" Version="0.1.2.0" />
   <Properties>
     <DisplayName>Fonado</DisplayName>
     <PublisherDisplayName>Fonado</PublisherDisplayName>
@@ -11,6 +11,7 @@
   </Properties>
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+    <PackageDependency Name="Microsoft.VCLibs.140.00.UWPDesktop" MinVersion="14.0.33728.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
   </Dependencies>
   <Resources><Resource Language="de-DE" /></Resources>
   <Applications>

@@ -1,0 +1,17 @@
+{
+  "name": "Microsoft.VCLibs.140.00.UWPDesktop",
+  "minVersion": "14.0.33728.0",
+  "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+  "architecture": "x64",
+  "fileName": "Microsoft.VCLibs.x64.14.00.Desktop.appx",
+  "sha256": "077A3D1A5D0622BD3004DCA85F5E192D6E98EC79B83D4AA06766759EA6C09C3D",
+  "sourceKind": "Microsoft Visual Studio / Windows SDK installed retail framework package",
+  "sourceRelativeToProgramFilesX86": "Microsoft SDKs/Windows Kits/10/ExtensionSDKs/Microsoft.VCLibs.Desktop/14.0/Appx/Retail/x64/Microsoft.VCLibs.x64.14.00.Desktop.appx",
+  "documentation": "https://learn.microsoft.com/en-us/troubleshoot/developer/visualstudio/cpp/libraries/c-runtime-packages-desktop-bridge",
+  "deploymentDocumentation": "https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-prepare",
+  "requiredRuntimeDlls": ["msvcp140.dll", "vcruntime140.dll", "vcruntime140_1.dll"],
+  "runtimeDllVersion": "14.40.33728.0",
+  "validatedNativeSdkSha256": "77DCB9007A9B304B568D9CF57AB69C9DAB7C45F577D08366A747AFCBEF214E29",
+  "nativeCrtImportsChecked": 1277,
+  "missingCrtImports": 0
+}

@@ -1,0 +1,11 @@
+{
+  "vendor": "Belledonne Communications",
+  "version": "5.5.39",
+  "variant": "Windows Desktop Win32 x64",
+  "url": "https://download.linphone.org/releases/windows/sdk/linphone-sdk-win64-5.5.39.zip",
+  "sha256": "77DCB9007A9B304B568D9CF57AB69C9DAB7C45F577D08366A747AFCBEF214E29",
+  "sourceTag": "5.5.39",
+  "sourceCommit": "4d00285c92511acbeba7b2c7c9c621599192584f",
+  "completeCorrespondingSourceDelivery": false,
+  "vendorInquiry": "https://github.com/BelledonneCommunications/linphone-sdk/issues/610"
+}

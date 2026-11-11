@@ -1,6 +1,6 @@
 # Fonado for Windows
 
-Native Windows softphone built with C#, WinUI 3 and **liblinphone SDK 5.5.24**. The client uses liblinphone exclusively; its provisioning request declares `sip_engine: "liblinphone"`. All call controls use actual SDK callbacks.
+Native Windows softphone built with C#, WinUI 3 and **liblinphone SDK 5.5.39**. The client uses liblinphone exclusively; its provisioning request declares `sip_engine: "liblinphone"`. All call controls use actual SDK callbacks.
 
 ## Features
 
@@ -26,7 +26,7 @@ Open `Fonado.Windows.slnx` and select x64, or run:
 ./Start-Dev.ps1
 ```
 
-Dependencies are pinned in `Fonado.Windows/packages.lock.json`; `NuGet.Config` maps the official Linphone feed. The first restore downloads the native SDK package. SDK binaries are not committed. Choose **Fonado beenden** before rebuilding; closing the main window keeps the app in the notification area.
+Managed dependencies are pinned in `Fonado.Windows/packages.lock.json`. The official Windows Desktop native SDK archive, variant and SHA-256 are pinned separately in `native-sdk.json`; `Restore-NativeSdk.ps1` checks the archive and extracts the required original runtime/resources into the ignored `.sdk` folder. Run it before building directly in Visual Studio. `Start-Dev.ps1 -Restore` also restores these files. SDK binaries are not committed. Choose **Fonado beenden** before rebuilding; closing the main window keeps the app in the notification area.
 
 For a synthetic UI preview, build Debug with `-p:FonadoDesignPreview=true`. The preview is visibly labeled, uses isolated test storage and creates no real account, SIP registration or call. Release builds cannot enable it.
 
@@ -43,7 +43,7 @@ See [background mode and shell status](DESKTOP-BACKGROUND.md), [favorite groups 
 
 ## License and releases
 
-Fonado Windows is licensed under **AGPL-3.0-or-later**; see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). The exact upstream SDK tag's license is AGPLv3, despite the NuGet package metadata reporting GPLv3. [SDK source and dependency information](SDK-SOURCES.md) records the pinned release and this discrepancy.
+Fonado Windows is licensed under **AGPL-3.0-or-later**; see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). The upstream SDK tag uses AGPLv3; each component retains its own actual terms. [SDK source and dependency information](SDK-SOURCES.md) records the pinned release and this discrepancy.
 
 The current publication is source code. Microsoft Store distribution additionally requires the corresponding SDK/dependency sources and build information for the shipped binaries, third-party notices, a signed-package acceptance test and Store certification. Source publication itself is not Store approval. [Store build instructions](STORE-BETA.md) describe the packaging process.
 

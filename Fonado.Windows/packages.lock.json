@@ -2,12 +2,6 @@
   "version": 1,
   "dependencies": {
     "net10.0-windows10.0.26100": {
-      "LinphoneSDK.Windows": {
-        "type": "Direct",
-        "requested": "[5.5.24, )",
-        "resolved": "5.5.24",
-        "contentHash": "Myl9NqRpbKQdK6cW2HO6ZCqo3oAD3dnNZjRjlj6iH8qNEixOmjm+rNbkOzX0AxYpQkzIOA0EWZXw7jxTCptj2A=="
-      },
       "Microsoft.Identity.Client.Broker": {
         "type": "Direct",
         "requested": "[4.90.1, )",

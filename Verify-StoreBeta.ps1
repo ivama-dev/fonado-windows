@@ -5,8 +5,11 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+& (Join-Path $PSScriptRoot 'Restore-NativeSdk.ps1') -VerifyOnly
 $sourceManifest = [xml](Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Fonado.Windows\Package.appxmanifest') -Raw)
 $expectedIdentity = $sourceManifest.Package.Identity
+$crtPin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'store-frameworks.json') -Raw | ConvertFrom-Json
+& (Join-Path $PSScriptRoot 'Restore-StoreDependencies.ps1') -VerifyOnly
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 function Read-PackageText([IO.Compression.ZipArchive]$Archive, [string]$Name) {
@@ -42,13 +45,31 @@ try {
         if ($names -notcontains $required) { throw "Required runtime or resource is missing: $required" }
     }
     $manifest = [xml](Read-PackageText $payloadArchive 'AppxManifest.xml')
+    $sdkPin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'native-sdk.json') -Raw | ConvertFrom-Json
+    $packagedSdk = Read-PackageText $payloadArchive 'Licenses/Native-SDK.json' | ConvertFrom-Json
+    $sdkFiles = Read-PackageText $payloadArchive 'Licenses/Native-SDK-Files.json' | ConvertFrom-Json
+    $packagedCrtPin = Read-PackageText $payloadArchive 'Licenses/Store-Frameworks.json' | ConvertFrom-Json
+    if ($packagedCrtPin.name -ne $crtPin.name -or $packagedCrtPin.minVersion -ne $crtPin.minVersion -or $packagedCrtPin.sha256 -ne $crtPin.sha256 -or
+        $packagedCrtPin.publisher -ne $crtPin.publisher -or $sdkPin.sha256 -ne $crtPin.validatedNativeSdkSha256) { throw 'Packaged CRT framework provenance mismatch or native SDK requires a new CRT import audit.' }
+    if ($packagedSdk.sha256 -ne $sdkPin.sha256 -or $packagedSdk.version -ne $sdkPin.version -or $sdkFiles.archiveSha256 -ne $sdkPin.sha256) { throw 'Packaged native SDK provenance mismatch.' }
+    foreach ($sdkFile in $sdkFiles.files) {
+        $payloadName = if ($sdkFile.path.StartsWith('bin/')) { $sdkFile.path.Substring(4) } elseif ($sdkFile.path.StartsWith('lib/mediastreamer/plugins/')) { $sdkFile.path.Substring(4) } elseif ($sdkFile.path.StartsWith('share/')) { $sdkFile.path } else { throw 'Unexpected SDK file mapping.' }
+        $sdkEntry = $payloadArchive.GetEntry($payloadName)
+        if (-not $sdkEntry) { throw "Missing SDK runtime/resource: $payloadName" }
+        $hashAlgorithm = [Security.Cryptography.SHA256]::Create(); $sdkStream = $sdkEntry.Open()
+        try { $actualHash = [BitConverter]::ToString($hashAlgorithm.ComputeHash($sdkStream)).Replace('-','') } finally { $sdkStream.Dispose(); $hashAlgorithm.Dispose() }
+        if ($actualHash -ne $sdkFile.sha256) { throw "SDK runtime/resource checksum mismatch: $payloadName" }
+    }
     if ($manifest.Package.Identity.Name -ne $expectedIdentity.Name -or
         $manifest.Package.Identity.Publisher -ne $expectedIdentity.Publisher -or
+        $manifest.Package.Identity.Version -ne $expectedIdentity.Version -or
         $manifest.Package.Identity.ProcessorArchitecture -ne 'x64') { throw 'Store package identity does not match Fonado.' }
     if ($manifest.Package.Applications.Application.Executable -ne 'Fonado.Windows.exe' -or
         $manifest.Package.Applications.Application.EntryPoint -ne 'Windows.FullTrustApplication') { throw 'Expected the regular full-trust desktop entry point.' }
     $deviceFamily = $manifest.Package.Dependencies.TargetDeviceFamily
     if ($deviceFamily.Name -ne 'Windows.Desktop' -or $deviceFamily.MinVersion -ne '10.0.19041.0') { throw 'Unexpected Windows target.' }
+    $crtDependency = @($manifest.Package.Dependencies.PackageDependency | Where-Object Name -eq $crtPin.name)
+    if ($crtDependency.Count -ne 1 -or $crtDependency[0].Publisher -ne $crtPin.publisher -or $crtDependency[0].MinVersion -ne $crtPin.minVersion) { throw 'The package must declare its pinned Microsoft VC-Libs desktop framework dependency.' }
     $runtime = (Read-PackageText $payloadArchive 'Fonado.Windows.runtimeconfig.json' | ConvertFrom-Json).runtimeOptions
     if ($runtime.framework -or -not @($runtime.includedFrameworks | Where-Object name -eq 'Microsoft.NETCore.App').Count) { throw '.NET runtime is not self-contained.' }
     $microsoft = Read-PackageText $payloadArchive 'microsoft365.json' | ConvertFrom-Json
@@ -69,6 +90,13 @@ try {
         status = 'local_package_checks_passed'
         scope = 'Archive, identity, bundled .NET, SIP/audio resources and configuration checks; not Store certification or installed-package acceptance.'
         linphoneDistributionLicense = 'awaiting_resolution'
+        linphoneSdkVersion = $sdkPin.version
+        linphoneSdkVariant = $sdkPin.variant
+        nativeSdkFilesVerified = $sdkFiles.files.Count
+        vcRuntimeFramework = $crtPin.name
+        vcRuntimeMinimumVersion = $crtPin.minVersion
+        vcRuntimePackageSha256 = $crtPin.sha256
+        vcRuntimePackageSignature = 'Valid Microsoft Corporation'
         submitted = $false
     }
     if ($ReportPath) {

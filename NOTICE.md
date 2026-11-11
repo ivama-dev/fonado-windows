@@ -6,7 +6,7 @@ The original Windows client code and accompanying project material in this repos
 
 Dependencies retain their own copyrights and licenses; the application's license does not relicense third-party software:
 
-- **Linphone SDK 5.5.24**, Belledonne Communications and upstream contributors. The exact upstream tag includes AGPLv3; its NuGet metadata instead reports GPL-3.0-or-later. See `SDK-SOURCES.md`. Components, codecs and native transitive dependencies require their own notices/corresponding sources when redistributed.
+- **Linphone SDK 5.5.39**, Belledonne Communications and upstream contributors. The upstream tag includes AGPLv3. The official Windows Desktop archive is pinned by SHA-256 in native-sdk.json. See `SDK-SOURCES.md`. Components, codecs and native transitive dependencies require their own notices/corresponding sources when redistributed.
 - **Microsoft Windows App SDK / WinUI**, Microsoft and contributors; Microsoft-published package/source license terms apply.
 - **MSAL.NET and MSAL extensions**, Microsoft and contributors, MIT-licensed upstream projects.
 - **.NET runtime/SDK**, .NET Foundation, Microsoft and contributors; original runtime and third-party notices apply when bundled.

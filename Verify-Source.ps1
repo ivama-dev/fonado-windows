@@ -9,7 +9,7 @@ $patterns = @{
     'literal bearer' = 'Bearer\s+[A-Za-z0-9_-]{32,}'
 }
 $files = @(Get-ChildItem -LiteralPath $PSScriptRoot -Recurse -File | Where-Object {
-    $_.FullName -notmatch '[\\/](\.git|\.vs|bin|obj|AppPackages|qa|artifacts)[\\/]'
+    $_.FullName -notmatch '[\\/](\.git|\.vs|\.sdk|bin|obj|AppPackages|qa|artifacts)[\\/]'
 })
 foreach ($file in $files) {
     $relative = [IO.Path]::GetRelativePath($PSScriptRoot, $file.FullName)

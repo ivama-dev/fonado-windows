@@ -6,6 +6,10 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+if ($Restore) { & (Join-Path $PSScriptRoot 'Restore-NativeSdk.ps1') }
+else { & (Join-Path $PSScriptRoot 'Restore-NativeSdk.ps1') -VerifyOnly }
+if ($Restore) { & (Join-Path $PSScriptRoot 'Restore-StoreDependencies.ps1') }
+else { & (Join-Path $PSScriptRoot 'Restore-StoreDependencies.ps1') -VerifyOnly }
 $project = Join-Path $PSScriptRoot 'Fonado.Windows\Fonado.Windows.csproj'
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $PSScriptRoot 'Fonado.Windows\AppPackages\StoreBeta' }
 $buildDirectory = [IO.Path]::GetFullPath($OutputDirectory)
@@ -41,6 +45,12 @@ $manifest = [xml](Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Fonado.Wind
 $version = $manifest.Package.Identity.Version
 $upload = Join-Path $packageDirectory "Fonado.Windows_${version}_x64.msixupload"
 if (-not (Test-Path -LiteralPath $upload)) { throw 'The expected Store upload package was not created.' }
+$frameworkPin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'store-frameworks.json') -Raw | ConvertFrom-Json
+$localTestDirectory = Join-Path $packageDirectory "Fonado.Windows_${version}_x64_Test"
+if (-not (Test-Path -LiteralPath $localTestDirectory -PathType Container)) { throw 'The expected local test package directory was not created.' }
+$localDependencies = Join-Path $localTestDirectory 'Dependencies\x64'
+[IO.Directory]::CreateDirectory($localDependencies) | Out-Null
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot ('.sdk\dependencies\x64\' + $frameworkPin.fileName)) -Destination (Join-Path $localDependencies $frameworkPin.fileName)
 & (Join-Path $PSScriptRoot 'Verify-StoreBeta.ps1') -UploadPath $upload -ReportPath (Join-Path $buildDirectory 'package-check.json')
 Write-Output "Store candidate prepared: $upload"
 Write-Output 'Not uploaded or submitted. Complete corresponding-source delivery and packaged-user acceptance before distribution.'

@@ -2,7 +2,7 @@
 
 This is a summary of the dependencies currently identified in the Windows application. For details, read [NOTICE.md](NOTICE.md), [SDK-SOURCES.md](SDK-SOURCES.md), and the pinned dependency lock files. Each component retains its own copyright and license terms.
 
-- **Liblinphone / LinphoneSDK.Windows 5.5.24** — Belledonne Communications and contributors. The upstream release's license text is GNU AGPLv3; NuGet package metadata instead says `GPL-3.0-or-later`. The discrepancy is recorded in [SDK-SOURCES.md](SDK-SOURCES.md); the upstream dependency tree and binary redistribution obligations require review.
+- **Liblinphone SDK 5.5.39, Windows Desktop x64** — Belledonne Communications and contributors. The upstream release's license text is GNU AGPLv3; The official archive, source commit and original runtime/resource checksums are recorded separately; the upstream dependency tree and binary redistribution obligations require review. See [SDK-SOURCES.md](SDK-SOURCES.md).
 - **Windows App SDK / WinUI** — Microsoft and contributors. License notices must be collected from the exact packages shipped.
 - **MSAL.NET and MSAL extensions** — Microsoft and contributors; upstream MIT licensing applies to the relevant packages.
 - **.NET runtime and dependencies** — Microsoft, .NET Foundation, and contributors. Relevant runtime licenses and notices apply if these components are bundled.

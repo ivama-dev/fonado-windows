@@ -2,6 +2,8 @@
 param([switch]$Restore, [switch]$BuildOnly)
 
 $ErrorActionPreference = 'Stop'
+if ($Restore) { & (Join-Path $PSScriptRoot 'Restore-NativeSdk.ps1') }
+else { & (Join-Path $PSScriptRoot 'Restore-NativeSdk.ps1') -VerifyOnly }
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
 if (-not (Test-Path -LiteralPath $vswhere)) {
     throw 'Visual Studio Installer was not found. Install the WinUI development workload first.'
