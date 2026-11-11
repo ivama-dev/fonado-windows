@@ -1,5 +1,5 @@
-using Fonoo.Windows.Accounts;
-using Fonoo.Windows.Telephony;
+using Fonado.Windows.Accounts;
+using Fonado.Windows.Telephony;
 using System.Net;
 using System.Text.Json;
 

@@ -5,6 +5,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$sourceManifest = [xml](Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Fonado.Windows\Package.appxmanifest') -Raw)
+$expectedIdentity = $sourceManifest.Package.Identity
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 function Read-PackageText([IO.Compression.ZipArchive]$Archive, [string]$Name) {
@@ -31,23 +33,23 @@ try {
     })
     if ($blocked.Count) { throw "Unexpected private, test or development files in MSIX: $($blocked -join ', ')" }
     foreach ($required in @(
-        'Fonoo.Windows.exe', 'Fonoo.Windows.dll', 'resources.pri', 'coreclr.dll', 'hostfxr.dll', 'hostpolicy.dll',
+        'Fonado.Windows.exe', 'Fonado.Windows.dll', 'resources.pri', 'coreclr.dll', 'hostfxr.dll', 'hostpolicy.dll',
         'CsWrapper.dll', 'liblinphone.dll', 'mediastreamer2.dll', 'belle-sip.dll',
         'mediastreamer/plugins/libmswasapi.dll', 'mediastreamer/plugins/libmswebrtc.dll',
         'share/belr/grammars/identity_grammar.belr', 'share/belr/grammars/sip_grammar.belr', 'share/belr/grammars/sdp_grammar.belr',
-        'share/linphone/rootca.pem', 'Assets/Fonoo.ico', 'Assets/StoreLogo.png', 'Assets/AudioTest.wav'
+        'share/linphone/rootca.pem', 'Assets/Fonado.ico', 'Assets/Fonado.Tray.ico', 'Assets/StoreLogo.png', 'Assets/AudioTest.wav'
     )) {
         if ($names -notcontains $required) { throw "Required runtime or resource is missing: $required" }
     }
     $manifest = [xml](Read-PackageText $payloadArchive 'AppxManifest.xml')
-    if ($manifest.Package.Identity.Name -ne 'Fonoo.fonoo' -or
-        $manifest.Package.Identity.Publisher -ne 'CN=650F94F0-5748-40C0-A4DB-FE00BDA46215' -or
-        $manifest.Package.Identity.ProcessorArchitecture -ne 'x64') { throw 'Store package identity does not match fonu.' }
-    if ($manifest.Package.Applications.Application.Executable -ne 'Fonoo.Windows.exe' -or
+    if ($manifest.Package.Identity.Name -ne $expectedIdentity.Name -or
+        $manifest.Package.Identity.Publisher -ne $expectedIdentity.Publisher -or
+        $manifest.Package.Identity.ProcessorArchitecture -ne 'x64') { throw 'Store package identity does not match Fonado.' }
+    if ($manifest.Package.Applications.Application.Executable -ne 'Fonado.Windows.exe' -or
         $manifest.Package.Applications.Application.EntryPoint -ne 'Windows.FullTrustApplication') { throw 'Expected the regular full-trust desktop entry point.' }
     $deviceFamily = $manifest.Package.Dependencies.TargetDeviceFamily
     if ($deviceFamily.Name -ne 'Windows.Desktop' -or $deviceFamily.MinVersion -ne '10.0.19041.0') { throw 'Unexpected Windows target.' }
-    $runtime = (Read-PackageText $payloadArchive 'Fonoo.Windows.runtimeconfig.json' | ConvertFrom-Json).runtimeOptions
+    $runtime = (Read-PackageText $payloadArchive 'Fonado.Windows.runtimeconfig.json' | ConvertFrom-Json).runtimeOptions
     if ($runtime.framework -or -not @($runtime.includedFrameworks | Where-Object name -eq 'Microsoft.NETCore.App').Count) { throw '.NET runtime is not self-contained.' }
     $microsoft = Read-PackageText $payloadArchive 'microsoft365.json' | ConvertFrom-Json
     if ($microsoft.ClientId -ne '9ade0cad-97cb-49e0-a22c-e6db148a225f' -or

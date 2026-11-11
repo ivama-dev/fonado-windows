@@ -9,18 +9,18 @@ if (-not (Test-Path -LiteralPath $vswhere)) {
 $msbuild = & $vswhere -latest -products '*' -requires Microsoft.Component.MSBuild -find 'MSBuild\Current\Bin\amd64\MSBuild.exe' | Select-Object -First 1
 if (-not $msbuild) { throw 'Visual Studio x64 MSBuild was not found.' }
 
-$project = Join-Path $PSScriptRoot 'Fonoo.Windows\Fonoo.Windows.csproj'
+$project = Join-Path $PSScriptRoot 'Fonado.Windows\Fonado.Windows.csproj'
 $arguments = @(
     $project,
     '/p:Configuration=Debug', '/p:Platform=x64', '/p:RuntimeIdentifier=win-x64',
     '/p:WindowsPackageType=None', '/p:WindowsAppSDKSelfContained=true',
-    '/p:FonooDesignPreview=false',
+    '/p:FonadoDesignPreview=false',
     '/p:AppxPackageSigningEnabled=false', '/v:minimal', '/nologo'
 )
 if ($Restore) { $arguments += '/restore' }
 & $msbuild @arguments
 if ($LASTEXITCODE -ne 0) { throw "Build failed with exit code $LASTEXITCODE." }
 if (-not $BuildOnly) {
-    $executable = Join-Path $PSScriptRoot 'Fonoo.Windows\bin\x64\Debug\net10.0-windows10.0.26100.0\win-x64\Fonoo.Windows.exe'
+    $executable = Join-Path $PSScriptRoot 'Fonado.Windows\bin\x64\Debug\net10.0-windows10.0.26100.0\win-x64\Fonado.Windows.exe'
     Start-Process -FilePath $executable -WorkingDirectory (Split-Path -Parent $executable)
 }

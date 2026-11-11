@@ -1,8 +1,8 @@
-using Fonoo.Windows.Telephony;
+using Fonado.Windows.Telephony;
 using Linphone;
 using System.Collections.Concurrent;
 
-namespace Fonoo.Windows.Telephony
+namespace Fonado.Windows.Telephony
 {
     // Compiled ONLY into this diagnostic executable, never the Windows application.
     public sealed partial class SipEngine
@@ -16,11 +16,11 @@ namespace Fonoo.Windows.Telephony
             {
                 core!.UseFiles = true; core.PlayFile = wav; core.Ring = null!; core.Ringback = null!;
                 core.Config.SetString("sip", "bind_address", "127.0.0.1");
-                core.PrimaryContact = "sip:fonoo-check@127.0.0.1";
+                core.PrimaryContact = "sip:fonado-check@127.0.0.1";
                 var transports = Factory.Instance.CreateTransports(); transports.UdpPort = -1; transports.TcpPort = transports.TlsPort = 0;
                 core.Transports = transports; core.NetworkReachable = true;
                 port = core.TransportsUsed.UdpPort;
-                core.PrimaryContact = "sip:fonoo-check-" + port + "@127.0.0.1:" + port;
+                core.PrimaryContact = "sip:fonado-check-" + port + "@127.0.0.1:" + port;
                 registered = true;
             });
             return port;
@@ -28,7 +28,7 @@ namespace Fonoo.Windows.Telephony
         public Task PointAtLoopbackAsync(int port) => Enqueue(() => domain = "127.0.0.1:" + port);
     }
 }
-namespace Fonoo.Windows.Diagnostics
+namespace Fonado.Windows.Diagnostics
 {
     public static class CallChecks
     {

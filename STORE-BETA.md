@@ -1,13 +1,17 @@
 # Microsoft Store packaging
 
-The official fonu package identity is declared in `Fonoo.Windows/Package.appxmanifest`. Forks must use their own Store identity and signing configuration. The application is x64-only in this revision.
+The official Fonado package identity is declared in `Fonado.Windows/Package.appxmanifest`. Forks must use their own Store identity and signing configuration. The application is x64-only in this revision.
+
+The registered package name remains `Fonoo.fonoo`; the user-facing name is Fonado. Do not rename the technical package identity when changing branding or contact email addresses. Confirm the manifest's identity and publisher against Partner Center's Product identity page before submission. The local verifier compares the built package with the source manifest; it does not check the Partner Center account.
 
 ```powershell
 ./Build-StoreBeta.ps1 -Restore
-./Verify-StoreBeta.ps1 -UploadPath "C:\path\Fonoo.Windows_0.1.0.0_x64.msixupload" -ReportPath "C:\path\package-check.json"
+./Verify-StoreBeta.ps1 -UploadPath "C:\path\Fonado.Windows_0.1.0.0_x64.msixupload" -ReportPath "C:\path\package-check.json"
 ```
 
 The build creates an unsigned Release/x64 Store upload candidate, with the .NET runtime bundled and the Windows App SDK as a Store framework dependency. Build outputs, signing keys and SDK DLLs must not be committed. The local verifier checks identity, runtime resources and exclusion of development/private files; it does not replace installation, certification or a complete redistribution review.
+
+When available, the build uses x64 MakeAppx from the installed Windows SDK 10.0.26100.0. Pass `-MakeAppxPath` to select another installed SDK tool. This avoids the access-denied startup failure observed with the NuGet-provided packaging tool on the release workstation.
 
 Before distributing a binary:
 

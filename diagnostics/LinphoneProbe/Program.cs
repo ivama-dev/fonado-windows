@@ -1,9 +1,9 @@
 using Linphone;
-using Fonoo.Windows.Telephony;
+using Fonado.Windows.Telephony;
 
 if (args.Contains("--calls"))
 {
-    try { await Fonoo.Windows.Diagnostics.CallChecks.RunAsync(); return 0; }
+    try { await Fonado.Windows.Diagnostics.CallChecks.RunAsync(); return 0; }
     catch (Exception ex) { Console.Error.WriteLine("FAIL: " + ex.Message); return 1; }
 }
 
@@ -20,7 +20,7 @@ if (args.Contains("--audio"))
             if (state.InputId is not null && !state.Inputs.Any(d => d.Id == state.InputId)) throw new Exception("Invalid input route.");
             if (state.OutputId is not null && !state.Outputs.Any(d => d.Id == state.OutputId)) throw new Exception("Invalid output route.");
             var rejected = false;
-            try { await engine.SelectAudioAsync(true, "fonoo-nonexistent-test-device"); }
+            try { await engine.SelectAudioAsync(true, "fonado-nonexistent-test-device"); }
             catch (InvalidOperationException) { rejected = true; }
             if (!rejected) throw new Exception("Invalid device was accepted.");
             await engine.TestAudioAsync(false);
@@ -98,7 +98,7 @@ var worker = new Thread(() =>
     {
         failure = ex;
     }
-}) { Name = "Fonoo.SipProbe", IsBackground = true };
+}) { Name = "Fonado.SipProbe", IsBackground = true };
 
 worker.Start();
 if (!worker.Join(TimeSpan.FromSeconds(30)))

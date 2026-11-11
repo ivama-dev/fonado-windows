@@ -1,4 +1,4 @@
-using Fonoo.Windows.Telephony;
+using Fonado.Windows.Telephony;
 
 static void Check(bool value, string message) { if (!value) throw new Exception(message); }
 foreach (var number in new[] { "101", "+43744222322", "*21101#" }) Check(DialNumber.IsValid(number), "Valid number rejected");
@@ -13,7 +13,7 @@ foreach (var (input, expected) in new[] {
     Check(DialNumber.Normalize(input) == expected, "Formatted dial target not normalized correctly");
 foreach (var input in new string?[] { null, "", " ", "+", "sip:+437200101010@other.test", "tel:+437200101010;ext=5", "101;transport=udp", "1 + 01", "++101", "101\r\n", "101\t", "+43/720/0101010", "１２３", new('1', 65), new(' ', 257) })
     Check(DialNumber.Normalize(input) is null, "Unsafe formatted dial target accepted");
-var directory = Path.Combine(Path.GetTempPath(), "fonoo-favorites-tests-" + Guid.NewGuid().ToString("N"));
+var directory = Path.Combine(Path.GetTempPath(), "fonado-favorites-tests-" + Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(directory);
 try
 {

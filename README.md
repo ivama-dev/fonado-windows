@@ -1,10 +1,10 @@
-# fonu for Windows
+# Fonado for Windows
 
 Native Windows softphone built with C#, WinUI 3 and **liblinphone SDK 5.5.24**. The client uses liblinphone exclusively; its provisioning request declares `sip_engine: "liblinphone"`. All call controls use actual SDK callbacks.
 
 ## Features
 
-- fonu email-code/password sign-in, optional DPAPI-protected remembered login and company/extension provisioning.
+- Fonado email-code/password sign-in, optional DPAPI-protected remembered login and company/extension provisioning.
 - Dialpad, incoming/outgoing SRTP audio, mute, hold/resume and direct/consultative transfer.
 - Account/company-scoped favorites with personal groups, drag reordering and keyboard-accessible move actions; synchronized call history with All/Missed filters and shared single-call/list deletion.
 - Windows/vCard contacts, read-only personal Outlook/Microsoft 365 mailbox contacts and an internal team directory.
@@ -13,22 +13,22 @@ Native Windows softphone built with C#, WinUI 3 and **liblinphone SDK 5.5.24**. 
 - Audio device selection, measured microphone levels, local hearing/speaker tests and a compact call window.
 - Configurable minimize-to-tray, native status badges/quick actions, taskbar overlays, hide-on-close, network/resume registration refresh and one app instance.
 
-This repository contains the Windows application, tests, assets and build scripts. The fonu backend and Apple/Android clients are separate projects. Using fonu services requires an active fonu account, an assigned extension and company permissions. Publishing the client does not grant access to those services.
+This repository contains the Windows application, tests, assets and build scripts. The Fonado backend and Apple/Android clients are separate projects. Using Fonado services requires an active Fonado account, an assigned extension and company permissions. Publishing the client does not grant access to those services.
 
 ## Build
 
 Use Windows 10 19041 or later, Visual Studio 2026 with WinUI application development, .NET SDK 10.0.401 and the Windows SDK 26100. The native SDK integration supports **x64**. ARM64 is explicitly rejected until a matching runtime is integrated.
 
-Open `Fonoo.Windows.slnx` and select x64, or run:
+Open `Fonado.Windows.slnx` and select x64, or run:
 
 ```powershell
 ./Start-Dev.ps1 -Restore -BuildOnly
 ./Start-Dev.ps1
 ```
 
-Dependencies are pinned in `Fonoo.Windows/packages.lock.json`; `NuGet.Config` maps the official Linphone feed. The first restore downloads the native SDK package. SDK binaries are not committed. Choose **fonu beenden** before rebuilding; closing the main window keeps the app in the notification area.
+Dependencies are pinned in `Fonado.Windows/packages.lock.json`; `NuGet.Config` maps the official Linphone feed. The first restore downloads the native SDK package. SDK binaries are not committed. Choose **Fonado beenden** before rebuilding; closing the main window keeps the app in the notification area.
 
-For a synthetic UI preview, build Debug with `-p:FonooDesignPreview=true`. The preview is visibly labeled, uses isolated test storage and creates no real account, SIP registration or call. Release builds cannot enable it.
+For a synthetic UI preview, build Debug with `-p:FonadoDesignPreview=true`. The preview is visibly labeled, uses isolated test storage and creates no real account, SIP registration or call. Release builds cannot enable it.
 
 ## Tests
 
@@ -43,12 +43,16 @@ See [background mode and shell status](DESKTOP-BACKGROUND.md), [favorite groups 
 
 ## License and releases
 
-fonu Windows is licensed under **AGPL-3.0-or-later**; see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). The exact upstream SDK tag's license is AGPLv3, despite the NuGet package metadata reporting GPLv3. [SDK source and dependency information](SDK-SOURCES.md) records the pinned release and this discrepancy.
+Fonado Windows is licensed under **AGPL-3.0-or-later**; see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). The exact upstream SDK tag's license is AGPLv3, despite the NuGet package metadata reporting GPLv3. [SDK source and dependency information](SDK-SOURCES.md) records the pinned release and this discrepancy.
 
 The current publication is source code. Microsoft Store distribution additionally requires the corresponding SDK/dependency sources and build information for the shipped binaries, third-party notices, a signed-package acceptance test and Store certification. Source publication itself is not Store approval. [Store build instructions](STORE-BETA.md) describe the packaging process.
 
+See [release notes for the Fonado 0.1.1 source milestone](RELEASE-NOTES.md) for the branding changes, validation and remaining binary-release checks.
+
 The Microsoft client ID and Store/package identities in the source are public application identifiers. No client secret, SIP password, bearer/refresh token, customer contact/history file, SSH key or signing key belongs in this repository.
 
-## Brand name and technical compatibility
+## Fonado branding and compatibility
 
-As of 12 October 2026, the brand and repository name is **fonu**. User-facing text and GitHub links use the new name. Existing technical identifiers containing `fonoo`/`Fonoo`, including project/source paths, Store identities, protocol fields and local data locations, remain stable for compatibility. Existing service, API, email and deep-link addresses remain valid until a separate migration. Historical records describe their original state. This change does not publish an app binary or deploy the backend.
+The brand, executable, solution, C# namespaces, assets and current documentation use **Fonado**. The canonical repository is [ivama-dev/fonado-windows](https://github.com/ivama-dev/fonado-windows), and customer-portal links use `https://app.fonado.ai/kunden/`. [Branding details](FONADO-BRANDING.md) document the smaller, left-aligned main wordmark and the notification-area artwork.
+
+Existing Store identity, service protocol identifiers and encrypted-cache keys remain compatible with existing installations. They are isolated in `Compatibility/ExistingInstallation.cs` and the package manifest. Historical source permalinks keep their original paths. The source release does not deploy the backend or change existing accounts.

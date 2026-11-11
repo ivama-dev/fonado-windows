@@ -1,0 +1,85 @@
+<Window x:Class="Fonado.Windows.QuickAccessWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:brand="using:Fonado.Windows.Controls" xmlns:desktop="using:Fonado.Windows.Desktop" Title="Fonado · Schnellzugriff">
+ <Border x:Name="Root" RequestedTheme="Light" Background="{ThemeResource FonadoSurface}" BorderBrush="{ThemeResource FonadoLine}" BorderThickness="1" CornerRadius="10" KeyDown="RootKeyDown">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+   <StackPanel x:Name="Body" Padding="18" Spacing="16">
+    <StackPanel.Resources>
+     <Style x:Key="QuickReady" TargetType="FontIcon"><Setter Property="Foreground" Value="{ThemeResource FonadoStatusGreen}"/></Style>
+     <Style x:Key="QuickOffline" TargetType="FontIcon"><Setter Property="Foreground" Value="{ThemeResource FonadoAudioWarm}"/></Style>
+     <Style x:Key="QuickNeutral" TargetType="Button"><Setter Property="Background" Value="{ThemeResource FonadoSurface}"/></Style>
+     <Style x:Key="QuickSelected" TargetType="Button"><Setter Property="Background" Value="{ThemeResource FonadoKeyFace}"/></Style>
+     <Style x:Key="QuickShortcut" TargetType="Button">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/><Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="Background" Value="{ThemeResource FonadoBackground}"/><Setter Property="Foreground" Value="{ThemeResource FonadoAccent}"/>
+      <Setter Property="BorderThickness" Value="0"/><Setter Property="CornerRadius" Value="10"/><Setter Property="Padding" Value="4,11"/>
+     </Style>
+    </StackPanel.Resources>
+    <Grid>
+     <brand:BrandLogo Width="88" Height="33" HorizontalAlignment="Left"/>
+     <Button Click="CloseClicked" HorizontalAlignment="Right" Width="30" Height="30" Padding="6" Background="Transparent" BorderThickness="0" AutomationProperties.Name="Schnellzugriff schließen" ToolTipService.ToolTip="Schließen (Esc)"><FontIcon Glyph="&#xE711;" FontSize="12"/></Button>
+    </Grid>
+    <Border Background="{ThemeResource FonadoBackground}" CornerRadius="12" Padding="12">
+     <StackPanel Spacing="9">
+      <Grid ColumnSpacing="8">
+       <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+       <FontIcon x:Name="ConnectionIcon" Glyph="&#xE73E;" FontSize="13"/>
+       <TextBlock x:Name="Connection" Grid.Column="1" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+      </Grid>
+      <Grid x:Name="Identity" ColumnSpacing="6">
+       <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+       <TextBlock x:Name="Company" FontSize="12" Foreground="{ThemeResource FonadoMuted}" TextTrimming="CharacterEllipsis"/>
+       <TextBlock x:Name="Extension" Grid.Column="1" FontSize="12" Foreground="{ThemeResource FonadoMuted}"/>
+      </Grid>
+      <Grid x:Name="ProfileRow" BorderBrush="{ThemeResource FonadoLine}" BorderThickness="0,1,0,0" Padding="0,8,0,0" ColumnSpacing="8">
+       <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+       <TextBlock Text="Anrufprofil" FontSize="12" Foreground="{ThemeResource FonadoMuted}" VerticalAlignment="Center"/>
+       <Button x:Name="ProfileButton" Grid.Column="1" Click="ProfilesClicked" HorizontalAlignment="Right" MaxWidth="192" Padding="6,3" Background="Transparent" BorderThickness="0">
+        <Grid ColumnSpacing="6"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="ProfileName" TextTrimming="CharacterEllipsis" FontSize="12"/><FontIcon Grid.Column="1" Glyph="&#xE70D;" FontSize="10"/></Grid>
+       </Button>
+      </Grid>
+     </StackPanel>
+    </Border>
+    <Grid x:Name="DialRow" ColumnSpacing="8">
+     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+     <TextBox x:Name="Number" PlaceholderText="Rufnummer oder Nebenstelle" MaxLength="64" FontSize="13" Height="40" TextChanged="NumberChanged" KeyDown="NumberKeyDown" AutomationProperties.Name="Rufnummer für Direktwahl"/>
+     <Button x:Name="Dial" Grid.Column="1" Width="42" Height="40" Style="{ThemeResource AccentButtonStyle}" IsEnabled="False" Click="DialClicked" AutomationProperties.Name="Rufnummer anrufen" ToolTipService.ToolTip="Anrufen"><SymbolIcon Symbol="Phone"/></Button>
+    </Grid>
+    <Border x:Name="CallCard" Background="{ThemeResource FonadoBackground}" CornerRadius="12" Padding="12" Visibility="Collapsed">
+     <StackPanel Spacing="12">
+      <Grid ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+       <StackPanel Spacing="3"><TextBlock x:Name="Peer" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/><TextBlock x:Name="CallState" FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource FonadoMuted}"/></StackPanel>
+       <TextBlock x:Name="Duration" Grid.Column="1" FontSize="13" Foreground="{ThemeResource FonadoAccent}" FontWeight="SemiBold"/>
+      </Grid>
+      <desktop:AudioLevelBar x:Name="LevelMeter" Height="6" AutomationProperties.Name="Gesprächspegel"/>
+      <Grid ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+       <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button x:Name="Answer" Content="Annehmen" Height="36" Click="AnswerClicked" Background="{ThemeResource FonadoCallGreen}" Foreground="{ThemeResource FonadoCallInk}" Visibility="Collapsed"/>
+        <Button x:Name="Mute" Width="42" Height="36" Click="MuteClicked"><FontIcon x:Name="MuteIcon" Glyph="&#xE720;" FontSize="17"/></Button>
+        <Button x:Name="Hold" Width="42" Height="36" Click="HoldClicked"><FontIcon x:Name="HoldIcon" Glyph="&#xE769;" FontSize="17"/></Button>
+       </StackPanel>
+       <Button x:Name="End" Grid.Column="1" Content="Auflegen" Height="36" Click="EndClicked" Background="{ThemeResource FonadoCallDanger}" Foreground="{ThemeResource FonadoDangerInk}"/>
+      </Grid>
+      <Button x:Name="Conversation" Content="Zum Gespräch" Click="OpenClicked" HorizontalAlignment="Stretch"/>
+     </StackPanel>
+    </Border>
+    <Grid ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+     <Button Style="{StaticResource QuickShortcut}" Click="FavoritesClicked" AutomationProperties.Name="Favoriten öffnen"><StackPanel Spacing="7"><SymbolIcon Symbol="Favorite"/><TextBlock Text="Favoriten" FontSize="12" HorizontalAlignment="Center"/></StackPanel></Button>
+     <Button Grid.Column="1" Style="{StaticResource QuickShortcut}" Click="TeamClicked" AutomationProperties.Name="Team öffnen"><StackPanel Spacing="7"><SymbolIcon Symbol="People"/><TextBlock Text="Team" FontSize="12" HorizontalAlignment="Center"/></StackPanel></Button>
+     <Button Grid.Column="2" Style="{StaticResource QuickShortcut}" Click="HistoryClicked" AutomationProperties.Name="Anrufliste öffnen"><StackPanel Spacing="7"><SymbolIcon Symbol="Clock"/><TextBlock Text="Anrufliste" FontSize="12" HorizontalAlignment="Center"/></StackPanel></Button>
+    </Grid>
+    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+     <TextBlock Text="Nicht stören" FontSize="13" VerticalAlignment="Center"/>
+     <ToggleSwitch x:Name="Dnd" Grid.Column="1" OnContent="" OffContent="" MinWidth="0" Toggled="DndToggled" AutomationProperties.Name="Nicht stören"/>
+    </Grid>
+    <TextBlock x:Name="Feedback" TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource FonadoMuted}" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite"/>
+    <Grid BorderBrush="{ThemeResource FonadoLine}" BorderThickness="0,1,0,0" Padding="0,14,0,0">
+     <Button Content="Fonado öffnen" Click="OpenClicked" HorizontalAlignment="Left"/>
+     <Button Content="Beenden" Click="QuitClicked" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Foreground="{ThemeResource FonadoMuted}"/>
+    </Grid>
+    <TextBlock Text="Bleibt erreichbar, solange dein PC wach ist." FontSize="11" Foreground="{ThemeResource FonadoMuted}" TextWrapping="Wrap"/>
+   </StackPanel>
+  </ScrollViewer>
+ </Border>
+</Window>

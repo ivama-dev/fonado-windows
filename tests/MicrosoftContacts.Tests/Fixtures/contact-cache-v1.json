@@ -1,0 +1,16 @@
+{
+  "FonooAccountId": "fonado-A",
+  "ClientId": "34a7c22b-bfe8-4381-ae47-9bc1e20ae912",
+  "MicrosoftAccountId": "microsoft-A",
+  "Username": "private@example.invalid",
+  "SyncedAt": "2026-01-01T00:00:00+00:00",
+  "Contacts": [
+    {
+      "Id": "id",
+      "Name": "Private Example",
+      "Number": "101",
+      "Kind": "Outlook"
+    }
+  ],
+  "TenantId": ""
+}

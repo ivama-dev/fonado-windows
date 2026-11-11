@@ -1,6 +1,6 @@
-using Fonoo.Windows.Accounts;
-using Fonoo.Windows.Telephony;
-using Fonoo.Windows.Desktop;
+using Fonado.Windows.Accounts;
+using Fonado.Windows.Telephony;
+using Fonado.Windows.Desktop;
 using System.Net;
 using System.Text.Json;
 using System.Text;
@@ -11,7 +11,7 @@ var json = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.S
 var device = "b1eaf427-ef75-4e62-9730-c8433f07c829";
 DeviceSession Session(string token = "a", string refresh = "b") => new() { Token = new(token[0], 43), RefreshToken = new(refresh[0], 43), DeviceId = device, UserId = "user-A", Email = "user@example.invalid", ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds(), DeviceExpiresAt = DateTimeOffset.UtcNow.AddDays(30).ToUnixTimeSeconds() };
 var summary = "{\"id\":\"user-A\",\"email\":\"user@example.invalid\"}";
-var folder = Path.Combine(Path.GetTempPath(), "fonoo-desktop-tests-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(folder);
+var folder = Path.Combine(Path.GetTempPath(), "fonado-desktop-tests-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(folder);
 try
 {
     var desktopStore = new DesktopSettingsStore(folder);
@@ -29,6 +29,8 @@ try
         (true,true,true,false,false,false), (true,true,true,true,true,false), (true,true,true,true,false,true) })
         Check(!TrayPresentation.ShouldHideOnMinimize(mode.Item1,mode.Item2,mode.Item3,mode.Item4,mode.Item5,mode.Item6), "Unsafe hide policy");
     var idle = new SipSnapshot(true, false, false, false, "Registriert", "");
+    QuickAccessChecks.Run();
+    TrayIdentityChecks.Run();
     Check(TrayPresentation.From(idle, "").Kind == TrayStatusKind.Ready, "Ready icon wrong");
     Check(TrayPresentation.From(idle with { Registered = false }, "Nicht angemeldet").Status == "Nicht angemeldet", "Signed-out tray status stale");
     Check(TrayPresentation.From(idle with { DoNotDisturb = true }, "").Kind == TrayStatusKind.DoNotDisturb, "DND badge missing");

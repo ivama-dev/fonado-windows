@@ -1,4 +1,4 @@
-using Fonoo.Windows.Desktop;
+using Fonado.Windows.Desktop;
 
 static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
 Check(PcmLevel.Measure([]) == default && PcmLevel.Measure(new float[480]) == default, "Silence must not show microphone activity.");

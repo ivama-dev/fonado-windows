@@ -5,7 +5,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <DefineConstants>$(DefineConstants);FONOO_CALL_DIAGNOSTICS</DefineConstants>
+    <DefineConstants>$(DefineConstants);FONADO_CALL_DIAGNOSTICS</DefineConstants>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <Target Name="RequireSdk" BeforeTargets="ResolveReferences">
@@ -15,11 +15,11 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="CallChecks.cs" />
-    <Compile Include="../../Fonoo.Windows/Telephony/SipEngine*.cs" Link="%(Filename)%(Extension)" />
-    <Compile Include="../../Fonoo.Windows/Telephony/SipSnapshot.cs" Link="SipSnapshot.cs" />
-    <Compile Include="../../Fonoo.Windows/Telephony/CallHistoryStore.cs" Link="CallHistoryStore.cs" />
-    <Compile Include="../../Fonoo.Windows/Telephony/DialNumber.cs" Link="DialNumber.cs" />
-    <Compile Include="../../Fonoo.Windows/Accounts/*.cs" Link="Accounts/%(Filename)%(Extension)" />
+    <Compile Include="../../Fonado.Windows/Telephony/SipEngine*.cs" Link="%(Filename)%(Extension)" />
+    <Compile Include="../../Fonado.Windows/Telephony/SipSnapshot.cs" Link="SipSnapshot.cs" />
+    <Compile Include="../../Fonado.Windows/Telephony/CallHistoryStore.cs" Link="CallHistoryStore.cs" />
+    <Compile Include="../../Fonado.Windows/Telephony/DialNumber.cs" Link="DialNumber.cs" />
+    <Compile Include="../../Fonado.Windows/Accounts/*.cs" Link="Accounts/%(Filename)%(Extension)" />
     <Reference Include="CsWrapper">
       <HintPath>$(LinphoneSdkRoot)/lib/netcore/x64/CsWrapper.dll</HintPath>
     </Reference>
@@ -32,4 +32,5 @@
           Exclude="$(LinphoneSdkRoot)/content/doc/**/*;$(LinphoneSdkRoot)/content/*tester*/**/*;$(LinphoneSdkRoot)/content/BCUnit/**/*;$(LinphoneSdkRoot)/content/mbedtls/**/*;$(LinphoneSdkRoot)/content/linphonecs/**/*"
           CopyToOutputDirectory="PreserveNewest" Link="share/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
+  <ItemGroup><Compile Include="../../Fonado.Windows/Compatibility/*.cs" Link="Compatibility/%(Filename)%(Extension)" /></ItemGroup>
 </Project>

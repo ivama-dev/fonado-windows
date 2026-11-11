@@ -1,5 +1,5 @@
-using Fonoo.Windows.Microsoft365;
-using Fonoo.Windows.Telephony;
+using Fonado.Windows.Microsoft365;
+using Fonado.Windows.Telephony;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -8,7 +8,7 @@ static void Check(bool condition, string message) { if (!condition) throw new Ex
 static async Task Rejected(Func<Task> action) { try { await action(); } catch (MicrosoftConnectionException) { return; } throw new Exception("Unsafe data accepted"); }
 static HttpResponseMessage Json(string body, HttpStatusCode status = HttpStatusCode.OK) => new(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
 const string clientId = "34a7c22b-bfe8-4381-ae47-9bc1e20ae912";
-var folder = Path.Combine(Path.GetTempPath(), "fonoo-outlook-tests-" + Guid.NewGuid().ToString("N"));
+var folder = Path.Combine(Path.GetTempPath(), "fonado-outlook-tests-" + Guid.NewGuid().ToString("N"));
 try
 {
     Check(!new MicrosoftOptions().Configured && !new MicrosoftOptions { ClientId = Guid.Empty.ToString() }.Configured && new MicrosoftOptions { ClientId = clientId }.Configured, "Registration configuration validation");
@@ -40,9 +40,9 @@ try
     handler.Next = _ => Task.FromResult(Json("{}", HttpStatusCode.Forbidden)); await Rejected(() => reader.ReadAsync((_, _) => Task.FromResult("synthetic-token"), default));
     handler.Next = _ => Task.FromResult(Json("{}", HttpStatusCode.TooManyRequests)); await Rejected(() => reader.ReadAsync((_, _) => Task.FromResult("synthetic-token"), default));
 
-    var store = new Store { Saved = new("fonoo-A", clientId, "microsoft-A", "a@example.invalid", DateTimeOffset.UtcNow, [new("id", "Alex", "101", "Outlook")]) };
+    var store = new Store { Saved = new("fonado-A", clientId, "microsoft-A", "a@example.invalid", DateTimeOffset.UtcNow, [new("id", "Alex", "101", "Outlook")]) };
     var identity = new Identity();
-    using var connection = new MicrosoftContactConnection(identity, reader, store, "fonoo-A", clientId);
+    using var connection = new MicrosoftContactConnection(identity, reader, store, "fonado-A", clientId);
     await connection.RestoreAsync(default); Check(connection.Snapshot!.Contacts.Length == 1 && identity.Interactive == 0, "Cached startup never prompts");
     handler.Next = _ => throw new HttpRequestException("Synthetic offline failure");
     try { await connection.RefreshAsync(default); } catch (HttpRequestException) { }
@@ -60,11 +60,11 @@ try
     var disconnect = connection.DisconnectAsync(); Check(connection.Snapshot is null && store.Saved is null, "Disconnect clears locally before pending response");
     release.SetResult(); try { await refresh; } catch (OperationCanceledException) { }
     await disconnect; Check(store.Saved is null && identity.Removed == 1, "Late response cannot recreate credentials or contacts");
-    Check(ProtectedMicrosoftContactStore.ScopedDirectory(folder, "fonoo-A", clientId) != ProtectedMicrosoftContactStore.ScopedDirectory(folder, "fonoo-B", clientId), "Fonoo account cache isolation");
+    Check(ProtectedMicrosoftContactStore.ScopedDirectory(folder, "fonado-A", clientId) != ProtectedMicrosoftContactStore.ScopedDirectory(folder, "fonado-B", clientId), "Fonado account cache isolation");
     var tenantIdentity = new Identity { SelectedTenant = "5759693e-a57b-442e-aee5-843c4aa7610f" };
     var tenantHandler = new Handler { Next = _ => Task.FromResult(Json("{\"value\":[]}")) };
     var tenantStore = new Store();
-    using var tenantConnection = new MicrosoftContactConnection(tenantIdentity, new GraphContactsReader(tenantHandler), tenantStore, "fonoo-A", clientId, tenantIdentity.SelectedTenant);
+    using var tenantConnection = new MicrosoftContactConnection(tenantIdentity, new GraphContactsReader(tenantHandler), tenantStore, "fonado-A", clientId, tenantIdentity.SelectedTenant);
     await tenantConnection.ConnectAsync(default);
     Check(tenantStore.Saved?.TenantId == tenantIdentity.SelectedTenant, "Confirmed company tenant persisted");
     tenantIdentity.SelectedTenant = "11111111-1111-1111-1111-111111111111";
@@ -72,16 +72,25 @@ try
     await Rejected(() => tenantConnection.RefreshAsync(default));
     Check(tenantConnection.SignInRequired && tenantConnection.Snapshot!.Contacts.Length == 0, "Foreign company rejected before Graph");
     var foreignCache = new Store { Saved = tenantStore.Saved };
-    using var isolated = new MicrosoftContactConnection(new Identity(), new GraphContactsReader(), foreignCache, "fonoo-A", clientId, "22222222-2222-2222-2222-222222222222");
+    using var isolated = new MicrosoftContactConnection(new Identity(), new GraphContactsReader(), foreignCache, "fonado-A", clientId, "22222222-2222-2222-2222-222222222222");
     await isolated.RestoreAsync(default);
     Check(isolated.Snapshot is null && foreignCache.Saved is null, "Foreign tenant cached contacts cannot be restored");
     if (!args.Contains("--skip-dpapi"))
     {
-        var protectedStore = new ProtectedMicrosoftContactStore(folder, "fonoo-A", clientId);
-        var snapshot = new MicrosoftContactSnapshot("fonoo-A", clientId, "microsoft-A", "private@example.invalid", DateTimeOffset.UtcNow, [new("id", "Private Example", "101", "Outlook")]);
+        var protectedStore = new ProtectedMicrosoftContactStore(folder, "fonado-A", clientId);
+        var snapshot = new MicrosoftContactSnapshot("fonado-A", clientId, "microsoft-A", "private@example.invalid", DateTimeOffset.UtcNow, [new("id", "Private Example", "101", "Outlook")]);
         protectedStore.Save(snapshot); Check(protectedStore.Load()!.Contacts.Single().Name == "Private Example", "Protected contact restart");
         Check(!Encoding.UTF8.GetString(File.ReadAllBytes(Path.Combine(folder, "contacts.protected"))).Contains("Private Example"), "No plaintext contact cache");
-        try { new ProtectedMicrosoftContactStore(folder, "fonoo-B", clientId).Load(); throw new Exception("Foreign cache accepted"); } catch (InvalidDataException) { }
+        try { new ProtectedMicrosoftContactStore(folder, "fonado-B", clientId).Load(); throw new Exception("Foreign cache accepted"); } catch (InvalidDataException) { }
+        var legacyPlain = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "contact-cache-v1.json"));
+        try
+        {
+            var legacyCipher = System.Security.Cryptography.ProtectedData.Protect(legacyPlain, null, System.Security.Cryptography.DataProtectionScope.CurrentUser);
+            File.WriteAllBytes(Path.Combine(folder, "contacts.protected"), legacyCipher);
+            var restored = protectedStore.Load();
+            Check(restored?.FonadoAccountId == "fonado-A" && restored.Contacts.Single().Name == "Private Example", "Pre-rename encrypted contact cache remains readable");
+        }
+        finally { System.Security.Cryptography.CryptographicOperations.ZeroMemory(legacyPlain); }
         protectedStore.Clear();
     }
     Console.WriteLine("PASS: least-privilege scope, trusted paging, folders, number validation, 401 renewal, denial/throttling, offline cache, identity isolation and disconnect races." + (args.Contains("--skip-dpapi") ? " DPAPI skipped (requires Windows user context)." : " DPAPI passed."));

@@ -9,3 +9,6 @@ LICENSE text eol=lf
 *.png binary
 *.ico binary
 *.wav binary
+# Preserve the exact upstream license bytes and their recorded hashes.
+ThirdParty/Microsoft/** -text -whitespace
+MANROPE-OFL.txt -text -whitespace

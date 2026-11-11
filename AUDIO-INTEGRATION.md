@@ -1,6 +1,6 @@
 # Windows-Audio
 
-Über **Audio** werden Mikrofon und Lautsprecher aus der tatsächlichen Linphone/WASAPI-Geräteliste gewählt. Die Auswahl gilt für neue und laufende Gespräche sowie eine Rückfrage; die Ausgabe wird auch zum Klingeln verwendet. Geräte-IDs werden lokal unter `%LOCALAPPDATA%/Fonoo/Windows/audio.json` gespeichert. Fehlt ein bevorzugtes Gerät, wird ein verfügbares Ersatzgerät genutzt und der Dialog weist darauf hin. Die bevorzugte Auswahl bleibt für die Wiederverbindung gespeichert. SDK-Geräteereignisse und der Aktualisieren-Button erneuern die Zuordnung.
+Über **Audio** werden Mikrofon und Lautsprecher aus der tatsächlichen Linphone/WASAPI-Geräteliste gewählt. Die Auswahl gilt für neue und laufende Gespräche sowie eine Rückfrage; die Ausgabe wird auch zum Klingeln verwendet. Geräte-IDs werden lokal unter `%LOCALAPPDATA%/Fonado/Windows/audio.json` gespeichert. Fehlt ein bevorzugtes Gerät, wird ein verfügbares Ersatzgerät genutzt und der Dialog weist darauf hin. Die bevorzugte Auswahl bleibt für die Wiederverbindung gespeichert. SDK-Geräteereignisse und der Aktualisieren-Button erneuern die Zuordnung.
 
 Ohne Anmeldung läuft nur während des Dialogs eine lokale Engine ohne SIP-Transporte und Konto. Mit Anmeldung nutzt der Dialog die vorhandene Engine. Alle SDK-Geräte-/Gesprächszugriffe erfolgen auf deren Worker. Bei geöffnetem, aktivem Dialog wird alle 100 ms abgefragt, ohne überlappende Abfragen. Gerätewechsel und Teststarts sperren die zugehörigen Bedienelemente bis zum Abschluss. Eine Aktualisierung während einer laufenden Abfrage bleibt für die nächste Abfrage vorgemerkt.
 
@@ -45,7 +45,7 @@ SDK-Referenz: [liblinphone 5.5](https://download.linphone.org/releases/docs/libl
 - Debug/x64 und das Release/x64-Store-Paket bauen erfolgreich; die Paketprüfung enthält jetzt auch den eigenen Testton. Kein Upload oder Store-Release.
 - Die PCM-Prüfung verifiziert Stille, nicht endliche Samples, den -60-dB-Boden, RMS/Sample-Peak einer bekannten Sinuswelle, kurze Spitzen, Begrenzung und unabhängige Folgeframes.
 - Der reguläre Windows-Dialog wurde mit den tatsächlichen Plantronics-Headset-Endpunkten geöffnet. Lokale Messung, der beendete Testton und der Windows-Hörtest mit sichtbarer Restzeit und automatischem Ende wurden in der UI geprüft. Das bestätigt die Verarbeitung und Zustandswechsel, nicht eine neue subjektive Hörqualitätsabnahme.
-- Die kompakte Mini-Ansicht wurde mit ausdrücklich synthetischen Vorschauwerten visuell geprüft: laufender Pegel, Stumm-Symbol und zugängliche Beschriftung, Halten mit ruhendem Pegel, Fortsetzen, Aktionsmenü, Rückfrage und Rückkehr zum ursprünglichen Gespräch. Die Vorschauwerte und simulierten Aktionen sind ausschließlich in `FONOO_DESIGN_PREVIEW`-Builds enthalten.
+- Die kompakte Mini-Ansicht wurde mit ausdrücklich synthetischen Vorschauwerten visuell geprüft: laufender Pegel, Stumm-Symbol und zugängliche Beschriftung, Halten mit ruhendem Pegel, Fortsetzen, Aktionsmenü, Rückfrage und Rückkehr zum ursprünglichen Gespräch. Die Vorschauwerte und simulierten Aktionen sind ausschließlich in `FONADO_DESIGN_PREVIEW`-Builds enthalten.
 - Hotplug, Bluetooth, verweigerte Berechtigungen und längere echte Gespräche bleiben Bestandteil der Geräteabnahme.
 
 ```powershell

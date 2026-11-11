@@ -16,7 +16,7 @@ foreach ($file in $files) {
     if ($file.Extension -match '^\.(protected|pfx|p12|p8|key|pem|sqlite|db|pcap|pcapng|dll|exe|pdb|nupkg|log)$' -or $file.Name -match '^\.env(?:\.|$)|^id_(rsa|ed25519)|secrets?\.json$') {
         throw "Private/generated file in source snapshot: $relative"
     }
-    if ($file.Extension -in @('.png','.ico','.wav')) { continue }
+    if ($file.Extension -in @('.png','.ico','.wav','.ttf')) { continue }
     $text = [IO.File]::ReadAllText($file.FullName)
     foreach ($category in $patterns.Keys) { if ($text -match $patterns[$category]) { throw "Source audit requires review ($category): $relative" } }
     if ($text -match '(?i)b[a]resip') { throw "Unexpected alternative SIP implementation: $relative" }

@@ -1,5 +1,5 @@
-using Fonoo.Windows.Accounts;
-using Fonoo.Windows.Telephony;
+using Fonado.Windows.Accounts;
+using Fonado.Windows.Telephony;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -23,7 +23,7 @@ Reject(() => snapshot.Validate("company", "user"), "Outgoing call accepted as mi
 snapshot.Entries[0].Incoming = true;
 snapshot.Validate("company", "user");
 
-var directory = Path.Combine(Path.GetTempPath(), "fonoo-history-" + Guid.NewGuid().ToString("N"));
+var directory = Path.Combine(Path.GetTempPath(), "fonado-history-" + Guid.NewGuid().ToString("N"));
 var protectionKey = RandomNumberGenerator.GetBytes(32);
 byte[] ProtectFixture(byte[] value, bool encrypt)
 {

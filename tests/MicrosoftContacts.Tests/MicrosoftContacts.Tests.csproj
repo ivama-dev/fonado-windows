@@ -3,8 +3,10 @@
  <ItemGroup>
   <PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.90.1"/>
   <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.90.1"/>
-  <Compile Include="../../Fonoo.Windows/Microsoft365/*.cs" Link="Microsoft365/%(Filename)%(Extension)"/>
-  <Compile Include="../../Fonoo.Windows/Telephony/ContactDirectory.cs" Link="ContactDirectory.cs"/>
-  <Compile Include="../../Fonoo.Windows/Telephony/DialNumber.cs" Link="DialNumber.cs"/>
+  <Compile Include="../../Fonado.Windows/Microsoft365/*.cs" Link="Microsoft365/%(Filename)%(Extension)"/>
+  <Compile Include="../../Fonado.Windows/Telephony/ContactDirectory.cs" Link="ContactDirectory.cs"/>
+  <Compile Include="../../Fonado.Windows/Telephony/DialNumber.cs" Link="DialNumber.cs"/>
  </ItemGroup>
+  <ItemGroup><Compile Include="../../Fonado.Windows/Compatibility/*.cs" Link="Compatibility/%(Filename)%(Extension)" /></ItemGroup>
+ <ItemGroup><None Update="Fixtures/contact-cache-v1.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>
