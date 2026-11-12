@@ -1,3 +1,4 @@
+#Requires -Version 7.2
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$UploadPath,
@@ -5,6 +6,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'NativeSdk.Common.ps1')
 & (Join-Path $PSScriptRoot 'Restore-NativeSdk.ps1') -VerifyOnly
 $sourceManifest = [xml](Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Fonado.Windows\Package.appxmanifest') -Raw)
 $expectedIdentity = $sourceManifest.Package.Identity
@@ -17,6 +19,13 @@ function Read-PackageText([IO.Compression.ZipArchive]$Archive, [string]$Name) {
     if (-not $entry) { throw "Required package file is missing: $Name" }
     $reader = [IO.StreamReader]::new($entry.Open())
     try { return $reader.ReadToEnd() } finally { $reader.Dispose() }
+}
+function Assert-PackageFileHash([IO.Compression.ZipArchive]$Archive, [string]$Name, [string]$ExpectedHash) {
+    $entry = $Archive.GetEntry($Name)
+    if (-not $entry) { throw "Required package file is missing: $Name" }
+    $stream = $entry.Open()
+    try { $actual = Get-NativeStreamSha256 $stream } finally { $stream.Dispose() }
+    if ($actual -ine $ExpectedHash) { throw "Packaged file checksum mismatch: $Name" }
 }
 
 $absoluteUpload = [IO.Path]::GetFullPath($UploadPath)
@@ -32,7 +41,7 @@ try {
     $payloadArchive = [IO.Compression.ZipArchive]::new($payloadStream, [IO.Compression.ZipArchiveMode]::Read, $true)
     $names = @($payloadArchive.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
     $blocked = @($names | Where-Object {
-        $_ -match '(?i)(^|/)(qa|tests|diagnostics|\.git|\.vs)(/|$)|\.(pfx|p8|key|sqlite|db|protected|ps1|pdb)$|\.private\.json$|tester[^/]*\.(dll|exe)$'
+        $_ -match '(?i)(^|/)(qa|tests|diagnostics|\.git|\.vs)(/|$)|\.(pfx|p8|key|sqlite|db|protected|ps1|pdb)$|\.private\.json$|tester[^/]*\.(dll|exe)$|(^|/)(mbedtls|mbedcrypto|mbedx509|xerces-c)\.dll$'
     })
     if ($blocked.Count) { throw "Unexpected private, test or development files in MSIX: $($blocked -join ', ')" }
     foreach ($required in @(
@@ -48,10 +57,19 @@ try {
     $sdkPin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'native-sdk.json') -Raw | ConvertFrom-Json
     $packagedSdk = Read-PackageText $payloadArchive 'Licenses/Native-SDK.json' | ConvertFrom-Json
     $sdkFiles = Read-PackageText $payloadArchive 'Licenses/Native-SDK-Files.json' | ConvertFrom-Json
+    $nativeNotices = Read-PackageText $payloadArchive 'Licenses/Native-Notice-Files.json' | ConvertFrom-Json
     $packagedCrtPin = Read-PackageText $payloadArchive 'Licenses/Store-Frameworks.json' | ConvertFrom-Json
     if ($packagedCrtPin.name -ne $crtPin.name -or $packagedCrtPin.minVersion -ne $crtPin.minVersion -or $packagedCrtPin.sha256 -ne $crtPin.sha256 -or
-        $packagedCrtPin.publisher -ne $crtPin.publisher -or $sdkPin.sha256 -ne $crtPin.validatedNativeSdkSha256) { throw 'Packaged CRT framework provenance mismatch or native SDK requires a new CRT import audit.' }
-    if ($packagedSdk.sha256 -ne $sdkPin.sha256 -or $packagedSdk.version -ne $sdkPin.version -or $sdkFiles.archiveSha256 -ne $sdkPin.sha256) { throw 'Packaged native SDK provenance mismatch.' }
+        $packagedCrtPin.publisher -ne $crtPin.publisher) { throw 'Packaged CRT framework provenance mismatch.' }
+    Assert-NativePinReady $sdkPin
+    if ($packagedSdk.sourceKind -ne 'selfbuilt-modified' -or $sdkFiles.sourceKind -ne 'selfbuilt-modified' -or
+        $packagedSdk.archiveSha256 -ne $sdkPin.archiveSha256 -or $packagedSdk.version -ne $sdkPin.version -or
+        $sdkFiles.buildId -ne $sdkPin.buildId -or $nativeNotices.buildId -ne $sdkPin.buildId) { throw 'Packaged source-built SDK provenance mismatch.' }
+    Assert-PackageFileHash $payloadArchive 'Licenses/Native-SDK.json' (Get-NativeSha256 (Join-Path $PSScriptRoot 'native-sdk.json'))
+    Assert-PackageFileHash $payloadArchive 'Licenses/SDK-SOURCES.md' (Get-NativeSha256 (Join-Path $PSScriptRoot 'SDK-SOURCES.md'))
+    Assert-PackageFileHash $payloadArchive 'Licenses/Store-Frameworks.json' (Get-NativeSha256 (Join-Path $PSScriptRoot 'store-frameworks.json'))
+    Assert-PackageFileHash $payloadArchive 'Licenses/Native-SDK-Files.json' $sdkPin.deliveryManifestSha256
+    Assert-PackageFileHash $payloadArchive 'Licenses/Native-Notice-Files.json' $sdkPin.noticeInventorySha256
     foreach ($sdkFile in $sdkFiles.files) {
         $payloadName = if ($sdkFile.path.StartsWith('bin/')) { $sdkFile.path.Substring(4) } elseif ($sdkFile.path.StartsWith('lib/mediastreamer/plugins/')) { $sdkFile.path.Substring(4) } elseif ($sdkFile.path.StartsWith('share/')) { $sdkFile.path } else { throw 'Unexpected SDK file mapping.' }
         $sdkEntry = $payloadArchive.GetEntry($payloadName)
@@ -59,6 +77,16 @@ try {
         $hashAlgorithm = [Security.Cryptography.SHA256]::Create(); $sdkStream = $sdkEntry.Open()
         try { $actualHash = [BitConverter]::ToString($hashAlgorithm.ComputeHash($sdkStream)).Replace('-','') } finally { $sdkStream.Dispose(); $hashAlgorithm.Dispose() }
         if ($actualHash -ne $sdkFile.sha256) { throw "SDK runtime/resource checksum mismatch: $payloadName" }
+    }
+    foreach ($notice in $nativeNotices.files) {
+        Assert-NativeRelativePath $notice.path
+        Assert-PackageFileHash $payloadArchive ('Licenses/Native/' + $notice.path) $notice.sha256
+    }
+    $expectedNativeNotices = @($nativeNotices.files | ForEach-Object { 'Licenses/Native/' + $_.path })
+    $actualNativeNotices = @($names | Where-Object { $_.StartsWith('Licenses/Native/') -and -not $_.EndsWith('/') })
+    if (@(Compare-Object $expectedNativeNotices $actualNativeNotices).Count -or $expectedNativeNotices.Count -ne $actualNativeNotices.Count) { throw 'Packaged native notice set has missing or unlisted files.' }
+    foreach ($requiredNotice in @('Licenses/Native/NOTICE.txt','Licenses/Native/Notice-Map.json')) {
+        if ($requiredNotice -notin $names) { throw "Required native notice reference missing: $requiredNotice" }
     }
     if ($manifest.Package.Identity.Name -ne $expectedIdentity.Name -or
         $manifest.Package.Identity.Publisher -ne $expectedIdentity.Publisher -or
@@ -89,14 +117,18 @@ try {
         excludedPrivateAndTestFiles = $true
         status = 'local_package_checks_passed'
         scope = 'Archive, identity, bundled .NET, SIP/audio resources and configuration checks; not Store certification or installed-package acceptance.'
-        linphoneDistributionLicense = 'awaiting_resolution'
+        linphoneDistributionLicense = 'selfbuilt_source_and_notice_delivery; publication_and_legal_scope_review_separate'
         linphoneSdkVersion = $sdkPin.version
         linphoneSdkVariant = $sdkPin.variant
         nativeSdkFilesVerified = $sdkFiles.files.Count
+        nativeSdkSourceKind = $sdkPin.sourceKind
+        nativeSdkArchiveSha256 = $sdkPin.archiveSha256
+        nativeNoticesVerified = $nativeNotices.files.Count
         vcRuntimeFramework = $crtPin.name
         vcRuntimeMinimumVersion = $crtPin.minVersion
         vcRuntimePackageSha256 = $crtPin.sha256
         vcRuntimePackageSignature = 'Valid Microsoft Corporation'
+        newNativeInstalledModuleAcceptance = 'separate_new_package_check_required'
         submitted = $false
     }
     if ($ReportPath) {

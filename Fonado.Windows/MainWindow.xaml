@@ -115,6 +115,7 @@
         </Border>
         <Button Content="Fonado beenden" Click="QuitClicked"/>
         <Button x:Name="SignOutButton" Content="Abmelden" Click="SignOutClicked" Visibility="Collapsed"/>
+        <HyperlinkButton Content="Quellcode und Lizenzen" NavigateUri="https://github.com/ivama-dev/fonado-windows/releases/tag/v0.1.2" HorizontalAlignment="Left" FontSize="13"/>
        </StackPanel>
        <Grid x:Name="PhonePanel" Visibility="Collapsed">
         <StackPanel x:Name="DialpadPanel" Spacing="22" MaxWidth="340" HorizontalAlignment="Stretch" VerticalAlignment="Center">

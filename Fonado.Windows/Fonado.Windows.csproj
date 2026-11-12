@@ -19,7 +19,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <FonadoNativeSdkRoot>$(MSBuildThisFileDirectory)..\.sdk\linphone-5.5.39</FonadoNativeSdkRoot>
+    <FonadoNativeSdkRoot>$(MSBuildThisFileDirectory)..\.sdk\linphone-selfbuilt-5.5.39-20261112</FonadoNativeSdkRoot>
     <DefineConstants Condition="'$(FonadoDesignPreview)' == 'true' and '$(Configuration)' == 'Debug'">$(DefineConstants);FONADO_DESIGN_PREVIEW</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
@@ -37,22 +37,26 @@
     <Content Include="microsoft365.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="..\LICENSE" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="Licenses\Fonado-AGPL-3.0.txt" />
     <Content Include="..\NOTICE.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="Licenses\NOTICE.md" />
+    <Content Include="..\SDK-SOURCES.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="Licenses\SDK-SOURCES.md" />
     <Content Include="..\native-sdk.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="Licenses\Native-SDK.json" />
     <Content Include="..\store-frameworks.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="Licenses\Store-Frameworks.json" />
     <Content Include="$(FonadoNativeSdkRoot)\sdk-files.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="Licenses\Native-SDK-Files.json" />
+    <Content Include="$(FonadoNativeSdkRoot)\native-notices.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="Licenses\Native-Notice-Files.json" />
+    <Content Include="$(FonadoNativeSdkRoot)\notices\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="Licenses\Native\%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="..\ThirdParty\Microsoft\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="Licenses\Microsoft\%(RecursiveDir)%(Filename)%(Extension)" />
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <Target Name="ValidateSipArchitecture" BeforeTargets="ResolveReferences">
     <Error Condition="'$(Platform)' != 'x64'" Text="The selected Linphone SDK has only been integrated for x64." />
     <Error Condition="!Exists('$(FonadoNativeSdkRoot)\bin\CsWrapper.dll')" Text="Run Restore-NativeSdk.ps1 before building Fonado." />
+    <Error Condition="!Exists('$(FonadoNativeSdkRoot)\native-notices.json')" Text="Finalize and restore the source-built SDK and native notices before building Fonado." />
   </Target>
   <ItemGroup>
     <Reference Include="CsWrapper"><HintPath>$(FonadoNativeSdkRoot)/bin/CsWrapper.dll</HintPath></Reference>
     <Content Include="$(FonadoNativeSdkRoot)/bin/*.dll" Exclude="$(FonadoNativeSdkRoot)/bin/*tester*.dll"
-             CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
     <Content Include="$(FonadoNativeSdkRoot)/lib/mediastreamer/plugins/libmswasapi.dll;$(FonadoNativeSdkRoot)/lib/mediastreamer/plugins/libmswebrtc.dll"
-             CopyToOutputDirectory="PreserveNewest" Link="mediastreamer/plugins/%(Filename)%(Extension)" />
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="mediastreamer/plugins/%(Filename)%(Extension)" />
     <Content Include="$(FonadoNativeSdkRoot)/share/belr/**/*" CopyToOutputDirectory="PreserveNewest" Link="share/belr/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="$(FonadoNativeSdkRoot)/share/linphone/rootca.pem" CopyToOutputDirectory="PreserveNewest" Link="share/linphone/rootca.pem" />
     <Content Include="$(FonadoNativeSdkRoot)/share/sounds/**/*" CopyToOutputDirectory="PreserveNewest" Link="share/sounds/%(RecursiveDir)%(Filename)%(Extension)" />

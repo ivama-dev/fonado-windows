@@ -9,9 +9,13 @@
   "sourceRelativeToProgramFilesX86": "Microsoft SDKs/Windows Kits/10/ExtensionSDKs/Microsoft.VCLibs.Desktop/14.0/Appx/Retail/x64/Microsoft.VCLibs.x64.14.00.Desktop.appx",
   "documentation": "https://learn.microsoft.com/en-us/troubleshoot/developer/visualstudio/cpp/libraries/c-runtime-packages-desktop-bridge",
   "deploymentDocumentation": "https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-prepare",
-  "requiredRuntimeDlls": ["msvcp140.dll", "vcruntime140.dll", "vcruntime140_1.dll"],
+  "requiredRuntimeDlls": [
+    "msvcp140.dll",
+    "vcruntime140.dll",
+    "vcruntime140_1.dll"
+  ],
   "runtimeDllVersion": "14.40.33728.0",
-  "validatedNativeSdkSha256": "77DCB9007A9B304B568D9CF57AB69C9DAB7C45F577D08366A747AFCBEF214E29",
-  "nativeCrtImportsChecked": 1277,
-  "missingCrtImports": 0
+  "nativeImportAuditStatus": "See matching release native import evidence; not asserted by this framework provenance",
+  "installedModuleAcceptance": "See matching release evidence; not asserted by this provenance manifest",
+  "currentMicrosoftFrameworkEvidence": "Microsoft-signed VS2026 CRT.Appx.Desktop.140.Msi14.52.37029 ships the same signed v14Desktop33728 framework; no blanket native ABI/security assurance"
 }

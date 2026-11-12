@@ -6,10 +6,10 @@ The original Windows client code and accompanying project material in this repos
 
 Dependencies retain their own copyrights and licenses; the application's license does not relicense third-party software:
 
-- **Linphone SDK 5.5.39**, Belledonne Communications and upstream contributors. The upstream tag includes AGPLv3. The official Windows Desktop archive is pinned by SHA-256 in native-sdk.json. See `SDK-SOURCES.md`. Components, codecs and native transitive dependencies require their own notices/corresponding sources when redistributed.
+- **Fonado source build of Linphone SDK 5.5.39**, Belledonne Communications and upstream contributors, with documented Fonado build adapters and MbedTLS 3.6.7/RNNoise v0.2 source replacements. The upstream SDK tag includes AGPLv3; component licenses and notices remain applicable. See `SDK-SOURCES.md`, `native-sdk.json` and the accompanying native source/notice delivery.
 - **Microsoft Windows App SDK / WinUI**, Microsoft and contributors; Microsoft-published package/source license terms apply.
 - **MSAL.NET and MSAL extensions**, Microsoft and contributors, MIT-licensed upstream projects.
 - **.NET runtime/SDK**, .NET Foundation, Microsoft and contributors; original runtime and third-party notices apply when bundled.
 - **Windows SDK build tooling**, Microsoft; development-tool terms apply. Its presence in NuGet restore does not place the tool under this application's license.
 
-Native SDK/runtime binaries are restored from their official feeds and are not included in this source repository. The `.NET` dependency lock file identifies the resolved packages. A binary release needs its own complete third-party inventory and corresponding-source bundle; this notice is not a claim that those release artifacts have already been prepared.
+Native SDK binaries are restored from the separately pinned Fonado source-built archive and are not committed to this repository. Its original component notices are included under `Licenses/Native` in the application package. The `.NET` dependency lock file identifies the resolved managed packages. Matching binary releases must provide the native corresponding-source bundle and build instructions alongside the application source. This short notice does not replace those original texts.

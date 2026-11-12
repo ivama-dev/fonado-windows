@@ -1,11 +1,156 @@
 {
-  "vendor": "Belledonne Communications",
+  "schemaVersion": 2,
+  "sourceKind": "selfbuilt-modified",
+  "upstream": "Belledonne Communications Linphone SDK",
   "version": "5.5.39",
-  "variant": "Windows Desktop Win32 x64",
-  "url": "https://download.linphone.org/releases/windows/sdk/linphone-sdk-win64-5.5.39.zip",
-  "sha256": "77DCB9007A9B304B568D9CF57AB69C9DAB7C45F577D08366A747AFCBEF214E29",
+  "variant": "Fonado source-built modified Windows Desktop x64 audio SDK",
   "sourceTag": "5.5.39",
   "sourceCommit": "4d00285c92511acbeba7b2c7c9c621599192584f",
-  "completeCorrespondingSourceDelivery": false,
-  "vendorInquiry": "https://github.com/BelledonneCommunications/linphone-sdk/issues/610"
+  "cacheDirectory": ".sdk/linphone-selfbuilt-5.5.39-20261112",
+  "buildReceiptSha256": "055744D6D2C93B7182D23D5700F83486391FAF27D1CE5258C1D4193EF2EDE225",
+  "sourceChanges": [
+    "MbedTLS3.6.7 upstream source with documented own configuration",
+    "RNNoise0.2 upstream release default model and documented own configuration",
+    "Audio-only feature configuration; Xerces/AdvancedIM/Video disabled"
+  ],
+  "nativeArtifacts": [
+    {
+      "path": "bin/bctoolbox.dll",
+      "bytes": 1442816,
+      "sha256": "D133B774099475112A9548D49B8C47590432B07BFCE2FAD6C358AE430B71F485"
+    },
+    {
+      "path": "bin/belcard.dll",
+      "bytes": 630784,
+      "sha256": "EE12C8FD159914BA7D04FFA5CA569850F3FF741081B1C373AC2EC7D51BBD0D71"
+    },
+    {
+      "path": "bin/belle-sip.dll",
+      "bytes": 920064,
+      "sha256": "3EAD735A5CE6467C2BAE2EF20D7FBCB04C43A23BEC3D032B614D0004960DC165"
+    },
+    {
+      "path": "bin/belr.dll",
+      "bytes": 263168,
+      "sha256": "93677EA69B22BF21C036725A4A21E9FBF0DBD636639DD3EDCCB9C9AAAB537006"
+    },
+    {
+      "path": "bin/bv16.dll",
+      "bytes": 81408,
+      "sha256": "E7C98A86D087E6BB0212766743498F8C96126D83B60481909FA384EA43FF1BC6"
+    },
+    {
+      "path": "bin/bzrtp.dll",
+      "bytes": 86528,
+      "sha256": "68241618C675B933E1FB204004932E6ECB39DC8D15564A186710511F9103F1DD"
+    },
+    {
+      "path": "bin/decaf.dll",
+      "bytes": 168960,
+      "sha256": "61DDF800ECEFA9BE86D5EF0509558B6BC683937FA44E0F7C86BE21EE2A574B5D"
+    },
+    {
+      "path": "bin/gsm.dll",
+      "bytes": 44544,
+      "sha256": "AB86B44935E5AEA4174ACD865E7B5100415060564A10ED7208FA2F95A5A4CF08"
+    },
+    {
+      "path": "bin/hidapi.dll",
+      "bytes": 41472,
+      "sha256": "3523AAEE762E266EED73F65C127FBF10ED7D441F2085E8D296834154E57615B7"
+    },
+    {
+      "path": "bin/jsoncpp.dll",
+      "bytes": 207872,
+      "sha256": "AAC62E5B8CD5D7CEBCB64C7A0D6AA05D68B3491B169C4E324CC3CC874FA7A19C"
+    },
+    {
+      "path": "bin/liblinphone.dll",
+      "bytes": 6267392,
+      "sha256": "C8584B61D32D68F25C84C5A75E20299790441810F5FDF179642A591AA691EAD8"
+    },
+    {
+      "path": "bin/mediastreamer2.dll",
+      "bytes": 2224640,
+      "sha256": "EBF6F4EC5F7FBCE0BA5EDEB81BEBA71507A323C55D3887F317682AD65E9C7ABA"
+    },
+    {
+      "path": "bin/opus.dll",
+      "bytes": 407040,
+      "sha256": "3FD97E04FD43E6626C60694AC3D856047BC3362BE3A6A409E508D00937AAFF81"
+    },
+    {
+      "path": "bin/ortp.dll",
+      "bytes": 273920,
+      "sha256": "6108A43546AC7E8FBC1E20D34886380C8B5D3511DC26C2EA9C89CFBC4409D356"
+    },
+    {
+      "path": "bin/soci_core_4_0.dll",
+      "bytes": 225280,
+      "sha256": "2696AFDBFD48A4CB107FA99AF0E88375B4A283E6E210C2EAFDB44DB7D03A3FF6"
+    },
+    {
+      "path": "bin/soci_sqlite3_4_0.dll",
+      "bytes": 103424,
+      "sha256": "175B427D2CBA28910CBF02C92CCC5985A36BBC956EC4FFA7506C5E3085BB0C52"
+    },
+    {
+      "path": "bin/speex.dll",
+      "bytes": 140288,
+      "sha256": "6BB5A1A0A015195759313749ABD3524B78A5901BDA8B35C1A1DBA99D3C493F46"
+    },
+    {
+      "path": "bin/speexdsp.dll",
+      "bytes": 113152,
+      "sha256": "323EF0141906A89A15B3F75785DA0FDECE2752AD1DA1DAB541DAEABD5861F108"
+    },
+    {
+      "path": "bin/sqlite3.dll",
+      "bytes": 1062400,
+      "sha256": "C28D89CEFAB13E7D635034048CFD7D94BEA018BC70EEEDC181D430C07BD43B4E"
+    },
+    {
+      "path": "bin/srtp2.dll",
+      "bytes": 226304,
+      "sha256": "A74BBDC7DEED73BD63535963F0AA16425A48FBA0FC9B06BCF1A366AA4C305ED7"
+    },
+    {
+      "path": "bin/xml2.dll",
+      "bytes": 1092608,
+      "sha256": "7DEA13385BC0CE2244AE07B502C157CB480AD11A053BB08C507D823ADC5C3261"
+    },
+    {
+      "path": "bin/zlib1.dll",
+      "bytes": 89600,
+      "sha256": "12237CD8D3E0B1CD0AD7A628B1AB9F81578F0FFD29234932E08CE158FD0F0596"
+    },
+    {
+      "path": "lib/mediastreamer/plugins/libmswasapi.dll",
+      "bytes": 58368,
+      "sha256": "5D38467DF0BC196FEABC5232FDC37AD696EABA5EE4E8FA75C73944DCCA8B5FAE"
+    },
+    {
+      "path": "lib/mediastreamer/plugins/libmswebrtc.dll",
+      "bytes": 326144,
+      "sha256": "68EE77F1FCADB3AAFCA203C42290F4D52D54CDF25F17A8EAF564CE9E5227D78C"
+    }
+  ],
+  "installedPackageAcceptance": "See matching release evidence; not asserted by this provenance manifest",
+  "fallbackToVendorBinariesAllowed": false,
+  "runtimeReportedVersion": "5.5.0",
+  "runtimeVersionBasis": "Archived upstream liblinphone CMake project VERSION5.5.0 without git-describe metadata; sourceTag5.5.39 and exact sourceCommit identify the selected source separately.",
+  "publicSourceReleaseUrl": "https://github.com/ivama-dev/fonado-windows/releases/tag/v0.1.2",
+  "correspondingSourceArchiveFileName": "Fonado-Independent-SDK-5.5.39-source-20261112.zip",
+  "correspondingSourceArchiveSha256": "1D1D2A38242490E8B13F34040A2FAC464A97DBE39E66CCB45A0897E608EE310A",
+  "correspondingSourceArchiveUrl": "https://github.com/ivama-dev/fonado-windows/releases/download/v0.1.2/Fonado-Independent-SDK-5.5.39-source-20261112.zip",
+  "correspondingSourceArchiveBytes": 113174180,
+  "sourceDeliveryReadyLocal": true,
+  "sourcePublicationStatus": "Matching release must provide the pinned corresponding-source asset alongside binaries",
+  "buildId": "fonado-sdk-5.5.39-source-x64-20261112-audio-v1",
+  "archiveSha256": "ECB24FB353E8D88AFE3D88A439E9AE479DE1F7EDE57C2675FCC608FF91C10CD0",
+  "archiveFileName": "Fonado-Independent-SDK-5.5.39-win64-20261112-audio-v1.zip",
+  "deliveryManifestSha256": "1EAA78CB0264A9B06BE738C942671046EC9400CDE86715A52F2187BF8EC9AE4D",
+  "noticeInventorySha256": "C23821432CDE4F9B4FE8320DC63B1C7107BE0331CE20351A0D0BE386229A6FFE",
+  "deliveryReady": true,
+  "noticeInventoryDerivation": "UTF8 without BOM; LF; New-NativeNoticeRecord with Ordinal relative-path order; exact SHA256 required; restore never changes pins"
 }

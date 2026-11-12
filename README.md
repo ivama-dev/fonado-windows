@@ -1,6 +1,6 @@
 # Fonado for Windows
 
-Native Windows softphone built with C#, WinUI 3 and **liblinphone SDK 5.5.39**. The client uses liblinphone exclusively; its provisioning request declares `sip_engine: "liblinphone"`. All call controls use actual SDK callbacks.
+Native Windows softphone built with C#, WinUI 3 and a **Fonado source build of liblinphone SDK 5.5.39**. The client uses liblinphone exclusively; its provisioning request declares `sip_engine: "liblinphone"`. All call controls use actual SDK callbacks.
 
 ## Features
 
@@ -19,14 +19,14 @@ This repository contains the Windows application, tests, assets and build script
 
 Use Windows 10 19041 or later, Visual Studio 2026 with WinUI application development, .NET SDK 10.0.401 and the Windows SDK 26100. The native SDK integration supports **x64**. ARM64 is explicitly rejected until a matching runtime is integrated.
 
-Open `Fonado.Windows.slnx` and select x64, or run:
+First restore the matching native runtime and notices using [SDK-SOURCES.md](SDK-SOURCES.md). Then open `Fonado.Windows.slnx` and select x64, or run:
 
 ```powershell
 ./Start-Dev.ps1 -Restore -BuildOnly
 ./Start-Dev.ps1
 ```
 
-Managed dependencies are pinned in `Fonado.Windows/packages.lock.json`. The official Windows Desktop native SDK archive, variant and SHA-256 are pinned separately in `native-sdk.json`; `Restore-NativeSdk.ps1` checks the archive and extracts the required original runtime/resources into the ignored `.sdk` folder. Run it before building directly in Visual Studio. `Start-Dev.ps1 -Restore` also restores these files. SDK binaries are not committed. Choose **Fonado beenden** before rebuilding; closing the main window keeps the app in the notification area.
+Managed dependencies are pinned in `Fonado.Windows/packages.lock.json`. The separate native SDK archive, source inputs and SHA-256 pins are recorded in `native-sdk.json`. `Restore-NativeSdk.ps1` verifies the source-built runtime, resources and notices in an ignored `.sdk` cache. It does not fall back to the earlier vendor archive. See [SDK-SOURCES.md](SDK-SOURCES.md) for source/build delivery and restore arguments. SDK binaries are not committed. Choose **Fonado beenden** before rebuilding; closing the main window keeps the app in the notification area.
 
 For a synthetic UI preview, build Debug with `-p:FonadoDesignPreview=true`. The preview is visibly labeled, uses isolated test storage and creates no real account, SIP registration or call. Release builds cannot enable it.
 
@@ -43,11 +43,11 @@ See [background mode and shell status](DESKTOP-BACKGROUND.md), [favorite groups 
 
 ## License and releases
 
-Fonado Windows is licensed under **AGPL-3.0-or-later**; see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). The upstream SDK tag uses AGPLv3; each component retains its own actual terms. [SDK source and dependency information](SDK-SOURCES.md) records the pinned release and this discrepancy.
+Fonado Windows is licensed under **AGPL-3.0-or-later**; see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). The upstream SDK tag uses AGPLv3; each component retains its own terms. [SDK source and dependency information](SDK-SOURCES.md) records the selected inputs and Fonado build changes.
 
 The current publication is source code. Microsoft Store distribution additionally requires the corresponding SDK/dependency sources and build information for the shipped binaries, third-party notices, a signed-package acceptance test and Store certification. Source publication itself is not Store approval. [Store build instructions](STORE-BETA.md) describe the packaging process.
 
-See [release notes for the Fonado 0.1.1 source milestone](RELEASE-NOTES.md) for the branding changes, validation and remaining binary-release checks.
+See [release notes](RELEASE-NOTES.md) for the Fonado 0.1.2 changes and validation scope.
 
 The Microsoft client ID and Store/package identities in the source are public application identifiers. No client secret, SIP password, bearer/refresh token, customer contact/history file, SSH key or signing key belongs in this repository.
 

@@ -1,12 +1,15 @@
+#Requires -Version 7.2
 [CmdletBinding()]
 param(
     [switch]$Restore,
     [string]$OutputDirectory = '',
-    [string]$MakeAppxPath = ''
+    [string]$MakeAppxPath = '',
+    [string]$NativeSdkArchivePath = '',
+    [string]$NativeNoticesDirectory = ''
 )
 
 $ErrorActionPreference = 'Stop'
-if ($Restore) { & (Join-Path $PSScriptRoot 'Restore-NativeSdk.ps1') }
+if ($Restore) { & (Join-Path $PSScriptRoot 'Restore-NativeSdk.ps1') -ArchivePath $NativeSdkArchivePath -NoticesDirectory $NativeNoticesDirectory }
 else { & (Join-Path $PSScriptRoot 'Restore-NativeSdk.ps1') -VerifyOnly }
 if ($Restore) { & (Join-Path $PSScriptRoot 'Restore-StoreDependencies.ps1') }
 else { & (Join-Path $PSScriptRoot 'Restore-StoreDependencies.ps1') -VerifyOnly }

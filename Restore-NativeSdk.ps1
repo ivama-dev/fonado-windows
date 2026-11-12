@@ -1,63 +1,86 @@
+#Requires -Version 7.2
 [CmdletBinding()]
-param([string]$ArchivePath = '', [switch]$VerifyOnly)
+param([string]$ArchivePath = '', [string]$NoticesDirectory = '', [switch]$VerifyOnly)
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'NativeSdk.Common.ps1')
 $pin = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'native-sdk.json') -Raw | ConvertFrom-Json
-$sdkRoot = Join-Path $PSScriptRoot ('.sdk\linphone-' + $pin.version)
+Assert-NativePinReady $pin
+$sdkRoot = Get-NativeCacheRoot $pin
 $inventoryPath = Join-Path $sdkRoot 'sdk-files.json'
-if (-not $VerifyOnly -and -not $ArchivePath -and (Test-Path -LiteralPath $inventoryPath)) {
+$noticeInventoryPath = Join-Path $sdkRoot 'native-notices.json'
+if (-not $VerifyOnly -and -not $ArchivePath -and -not $NoticesDirectory -and (Test-Path -LiteralPath $inventoryPath)) {
     & $PSCommandPath -VerifyOnly
     return
 }
 if ($VerifyOnly) {
-    if (-not (Test-Path -LiteralPath $inventoryPath)) { throw 'Native SDK is missing. Run Restore-NativeSdk.ps1 first.' }
+    if (-not (Test-Path -LiteralPath $inventoryPath) -or (Get-NativeSha256 $inventoryPath) -ine $pin.deliveryManifestSha256 -or
+        -not (Test-Path -LiteralPath $noticeInventoryPath) -or (Get-NativeSha256 $noticeInventoryPath) -ine $pin.noticeInventorySha256) {
+        throw 'Pinned self-built SDK/notice inventory missing or changed. Restore the pinned own delivery.'
+    }
     $inventory = Get-Content -LiteralPath $inventoryPath -Raw | ConvertFrom-Json
-    if ($inventory.archiveSha256 -ne $pin.sha256) { throw 'Native SDK pin mismatch.' }
-    $expectedPaths = @($inventory.files | ForEach-Object { $_.path })
-    foreach ($required in @('bin/CsWrapper.dll','bin/liblinphone.dll','bin/mediastreamer2.dll','lib/mediastreamer/plugins/libmswasapi.dll','lib/mediastreamer/plugins/libmswebrtc.dll','share/belr/grammars/sip_grammar.belr','share/linphone/rootca.pem')) {
-        if ($required -notin $expectedPaths) { throw "SDK inventory omits required content: $required" }
+    $noticeInventory = Get-Content -LiteralPath $noticeInventoryPath -Raw | ConvertFrom-Json
+    if ($inventory.sourceKind -ne 'selfbuilt-modified' -or $inventory.buildId -ne $pin.buildId -or
+        $noticeInventory.buildId -ne $pin.buildId -or $inventory.sourceCommit -ne $pin.sourceCommit) { throw 'Self-built cache provenance mismatch.' }
+    $expected = @($inventory.files | ForEach-Object path)
+    $actual = @(foreach ($folder in @('bin','lib','share')) {
+        $dir = Join-Path $sdkRoot $folder
+        if (Test-Path -LiteralPath $dir) { Get-ChildItem -LiteralPath $dir -Recurse -File | ForEach-Object { [IO.Path]::GetRelativePath($sdkRoot,$_.FullName).Replace('\','/') } }
+    })
+    if (@(Compare-Object $expected $actual).Count -or $actual.Count -ne $expected.Count) { throw 'Self-built cache has missing or unlisted runtime/resource files.' }
+    foreach ($f in $inventory.files) {
+        Assert-NativeRelativePath $f.path
+        $path = Join-Path $sdkRoot $f.path
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or (Get-NativeSha256 $path) -ine $f.sha256) { throw "Self-built SDK file mismatch: $($f.path)" }
     }
-    $actualPaths = @(
-        Get-ChildItem -LiteralPath (Join-Path $sdkRoot 'bin') -File -Filter '*.dll'
-        Get-Item -LiteralPath (Join-Path $sdkRoot 'lib/mediastreamer/plugins/libmswasapi.dll'),(Join-Path $sdkRoot 'lib/mediastreamer/plugins/libmswebrtc.dll'),(Join-Path $sdkRoot 'share/linphone/rootca.pem')
-        Get-ChildItem -LiteralPath (Join-Path $sdkRoot 'share/belr'),(Join-Path $sdkRoot 'share/sounds') -Recurse -File
-    ) | ForEach-Object { [IO.Path]::GetRelativePath($sdkRoot,$_.FullName).Replace('\','/') }
-    if (@(Compare-Object $expectedPaths @($actualPaths)).Count) { throw 'Native SDK cache contains missing or unlisted runtime/resource files. Restore it from the pinned official archive before building.' }
-    foreach ($file in $inventory.files) {
-        $path = [IO.Path]::GetFullPath((Join-Path $sdkRoot $file.path))
-        if (-not $path.StartsWith($sdkRoot + '\',[StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid SDK inventory path.' }
-        if (-not (Test-Path -LiteralPath $path) -or (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $file.sha256) { throw "Native SDK file mismatch: $($file.path)" }
+    $noticeRoot = Join-Path $sdkRoot 'notices'
+    $actualNotices = @(Get-ChildItem -LiteralPath $noticeRoot -Recurse -File | ForEach-Object { [IO.Path]::GetRelativePath($noticeRoot,$_.FullName).Replace('\','/') })
+    if (@(Compare-Object @($noticeInventory.files | ForEach-Object path) $actualNotices).Count -or $actualNotices.Count -ne @($noticeInventory.files).Count) { throw 'Native notices have missing or unlisted files.' }
+    foreach ($f in $noticeInventory.files) {
+        Assert-NativeRelativePath $f.path
+        if ((Get-NativeSha256 (Join-Path $noticeRoot $f.path)) -ine $f.sha256) { throw "Native notice checksum mismatch: $($f.path)" }
     }
-    Write-Output "PASS: pinned native SDK $($pin.version), $($inventory.files.Count) original runtime/resource files."
+    Write-Output "PASS: self-built SDK $($pin.buildId), $($inventory.files.Count) runtime/resource files and $($noticeInventory.files.Count) native notices."
     return
 }
-if (-not $ArchivePath) {
-    $ArchivePath = Join-Path $PSScriptRoot ('.sdk\downloads\linphone-sdk-win64-' + $pin.version + '.zip')
-    if (-not (Test-Path -LiteralPath $ArchivePath)) {
-        [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($ArchivePath)) | Out-Null
-        Invoke-WebRequest -Uri $pin.url -OutFile $ArchivePath
+if (-not $ArchivePath) { $ArchivePath = Join-Path $PSScriptRoot ('.sdk/downloads/' + $pin.archiveFileName) }
+if (-not (Test-Path -LiteralPath $ArchivePath -PathType Leaf)) { throw 'Provide -ArchivePath for the pinned self-built SDK ZIP. No vendor SDK download or fallback is allowed.' }
+if ((Get-NativeSha256 $ArchivePath) -ine $pin.archiveSha256) { throw 'Self-built SDK archive checksum mismatch; nothing extracted.' }
+$info = Read-NativeArchive $ArchivePath $pin
+if ($info.manifestSha256 -ine $pin.deliveryManifestSha256 -or $info.manifest.buildId -ne $pin.buildId) { throw 'Self-built SDK manifest mismatch.' }
+if (-not $NoticesDirectory) { throw 'Provide -NoticesDirectory for the separately pinned source-specific native notices.' }
+if (-not (Test-Path -LiteralPath $noticeInventoryPath)) {
+    $committedNoticePin = Join-Path $PSScriptRoot 'ThirdParty/Native/native-notices.json'
+    if (Test-Path -LiteralPath $committedNoticePin -PathType Leaf) {
+        if ((Get-NativeSha256 $committedNoticePin) -ine $pin.noticeInventorySha256) { throw 'Committed native notice inventory does not match the SDK pin.' }
+        $inventoryBytes = [IO.File]::ReadAllBytes($committedNoticePin)
+    } else {
+        # A source-only clone can reconstruct the same inventory; this NEVER updates its pin.
+        $record = New-NativeNoticeRecord $NoticesDirectory $pin.buildId
+        $text = ($record | ConvertTo-Json -Depth 8).Replace("`r`n","`n") + "`n"
+        $inventoryBytes = [Text.UTF8Encoding]::new($false).GetBytes($text)
+        if ([Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($inventoryBytes)) -ine $pin.noticeInventorySha256) { throw 'Reconstructed native notice inventory does not match the committed SDK pin.' }
     }
+    [IO.Directory]::CreateDirectory($sdkRoot) | Out-Null
+    [IO.File]::WriteAllBytes($noticeInventoryPath,$inventoryBytes)
 }
-if ((Get-FileHash -LiteralPath $ArchivePath -Algorithm SHA256).Hash -ne $pin.sha256) { throw 'Official SDK archive checksum mismatch; nothing extracted.' }
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-$zip = [IO.Compression.ZipFile]::OpenRead($ArchivePath)
-$files = @()
+if ((Get-NativeSha256 $noticeInventoryPath) -ine $pin.noticeInventorySha256) { throw 'Native notice inventory checksum mismatch.' }
+$notices = Get-Content -LiteralPath $noticeInventoryPath -Raw | ConvertFrom-Json
+foreach ($f in $notices.files) {
+    $source = Join-Path ([IO.Path]::GetFullPath($NoticesDirectory)) $f.path
+    if (-not (Test-Path -LiteralPath $source -PathType Leaf) -or (Get-NativeSha256 $source) -ine $f.sha256) { throw "Native notice source mismatch: $($f.path)" }
+}
+$zip = [IO.Compression.ZipFile]::OpenRead([IO.Path]::GetFullPath($ArchivePath))
 try {
-    foreach ($entry in $zip.Entries) {
-        if (-not $entry.FullName.StartsWith('linphone-sdk/win64/')) { continue }
-        $relative = $entry.FullName.Substring('linphone-sdk/win64/'.Length)
-        if ($relative -notmatch '^bin/[^/]+\.dll$|^lib/mediastreamer/plugins/(libmswasapi|libmswebrtc)\.dll$|^share/(belr/grammars/[^/]+|linphone/rootca\.pem|sounds/.+)$') { continue }
-        if ($entry.FullName.EndsWith('/') -or $relative -match '(?i)tester[^/]*\.dll$') { continue }
-        if ($relative.Contains(':') -or (($entry.ExternalAttributes -shr 16) -band 0xF000) -eq 0xA000) { throw 'Unsupported SDK archive entry.' }
-        $target = [IO.Path]::GetFullPath((Join-Path $sdkRoot $relative))
-        if (-not $target.StartsWith($sdkRoot + '\',[StringComparison]::OrdinalIgnoreCase)) { throw 'SDK archive path escaped destination.' }
+    foreach ($relative in @('sdk-files.json') + @($info.manifest.files | ForEach-Object path)) {
+        $target = Join-Path $sdkRoot $relative
         [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target)) | Out-Null
-        $inputStream = $entry.Open(); $outputStream = [IO.File]::Create($target)
-        try { $inputStream.CopyTo($outputStream) } finally { $outputStream.Dispose(); $inputStream.Dispose() }
-        $files += [ordered]@{path=$relative;bytes=$entry.Length;sha256=(Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash}
+        $inputStream = $zip.GetEntry('win64/' + $relative).Open(); $outputStream = [IO.File]::Create($target)
+        try { $inputStream.CopyTo($outputStream) } finally { $inputStream.Dispose(); $outputStream.Dispose() }
     }
 } finally { $zip.Dispose() }
-foreach ($required in @('bin/CsWrapper.dll','bin/liblinphone.dll','bin/mediastreamer2.dll','lib/mediastreamer/plugins/libmswasapi.dll','lib/mediastreamer/plugins/libmswebrtc.dll','share/belr/grammars/sip_grammar.belr','share/linphone/rootca.pem')) {
-    if ($required -notin @($files | ForEach-Object { $_.path })) { throw "Official SDK is missing required content: $required" }
+foreach ($f in $notices.files) {
+    $target = Join-Path $sdkRoot ('notices/' + $f.path)
+    [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target)) | Out-Null
+    [IO.File]::Copy((Join-Path ([IO.Path]::GetFullPath($NoticesDirectory)) $f.path),$target,$true)
 }
-[ordered]@{version=$pin.version;variant=$pin.variant;archiveSha256=$pin.sha256;files=$files} | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $inventoryPath -Encoding UTF8
 & $PSCommandPath -VerifyOnly
