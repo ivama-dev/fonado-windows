@@ -10,7 +10,34 @@ const string fixture = """
 AvailabilitySnapshot Decode(string value) => JsonSerializer.Deserialize<AvailabilitySnapshot>(value, json)!.Validate("alpha", "owner");
 void Check(bool value, string message) { if (!value) throw new Exception(message); }
 void Reject(Action action) { try { action(); } catch (AccountException) { return; } throw new Exception("Invalid profile accepted"); }
+void RejectJson(Action action) { try { action(); } catch (JsonException) { return; } throw new Exception("Malformed availability JSON accepted"); }
 var current = Decode(fixture);
+// An untouched user's availability has revision 0; its first write must compare-and-swap from 0.
+var initialFixture = fixture.Replace("\"revision\":7", "\"revision\":0");
+var initial = Decode(initialFixture);
+Check(initial.Revision == 0, "Initial availability revision 0 must be readable");
+Reject(() => Decode(fixture.Replace("\"revision\":7", "\"revision\":-1")));
+RejectJson(() => Decode(fixture.Replace("\"revision\":7,", "")));
+RejectJson(() => Decode(fixture.Replace("\"revision\":7", "\"revision\":null")));
+Reject(() => initial.Validate("foreign", "owner"));
+Reject(() => initial.Validate("alpha", "other"));
+Reject(() => Decode(initialFixture.Replace("\"self_user_id\":\"owner\"", "\"self_user_id\":\"other\"")));
+Reject(() => Decode(initialFixture.Replace("\"schema_version\":1", "\"schema_version\":2")));
+Reject(() => DeviceProfileChanges.Upsert(initial, new() { Id = "bad", Name = "Foreign", DeviceIds = ["foreign"] }, true));
+using (var initialHandler = new ProfilesHandler(initial, json))
+using (var initialAccount = new AccountClient(initialHandler))
+{
+    await initialAccount.PasswordAsync("owner@example.invalid", "test-only", CancellationToken.None);
+    var read = await initialAccount.GetAvailabilityAsync("alpha", "owner", CancellationToken.None);
+    Check(read.Revision == 0, "Authenticated read must accept initial availability revision 0");
+    var saved = await initialAccount.SaveDeviceProfilesAsync(read, DeviceProfileChanges.Select(read, "standard"), CancellationToken.None);
+    Check(saved.Revision == 1 && saved.Settings.ActiveProfile.IsStandard && initialHandler.Writes == 1,
+        "First profile save must advance revision 0 to 1 and read confirmed state");
+    using var firstWrite = JsonDocument.Parse(initialHandler.LastWrite!);
+    Check(firstWrite.RootElement.GetProperty("tenant_id").GetString() == "alpha" &&
+        firstWrite.RootElement.GetProperty("expected_revision").GetInt32() == 0,
+        "First availability save must preserve tenant scope and expected_revision 0");
+}
 Check(current.OwnDevices.Length == 2 && !current.Company.RoutingEnabled && current.Settings.ActiveProfile.Name == "Büro", "Profiles depend only on own devices, independently of advanced routing");
 var standardJson = JsonSerializer.Serialize(DeviceProfile.Standard(), new JsonSerializerOptions(json) { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull });
 Check(JsonDocument.Parse(standardJson).RootElement.GetProperty("device_ids").ValueKind == JsonValueKind.Null, "Standard must explicitly send null");
@@ -62,7 +89,7 @@ handler.Unconfirmed = false; handler.PendingRead = new(TaskCreationOptions.RunCo
 var pending = account.GetAvailabilityAsync("alpha","owner",CancellationToken.None);
 account.SignOut(); handler.PendingRead.SetResult(handler.Json(handler.State));
 try { await pending; throw new Exception("Old account read accepted"); } catch (OperationCanceledException) { }
-Console.WriteLine("PASS: device profile contract, dynamic Standard, own-device scope, CRUD, capacity, confirmed writes, revision conflicts and sign-out race");
+Console.WriteLine("PASS: initial availability revision 0 and first save, required revision, device profile contract, dynamic Standard, own-device scope, CRUD, capacity, confirmed writes, revision conflicts and sign-out race");
 
 sealed class ProfilesHandler(AvailabilitySnapshot initial, JsonSerializerOptions json) : HttpMessageHandler
 {
@@ -81,6 +108,8 @@ sealed class ProfilesHandler(AvailabilitySnapshot initial, JsonSerializerOptions
         Writes++; LastWrite = await request.Content!.ReadAsStringAsync(ct);
         if (Conflict) return new(HttpStatusCode.Conflict);
         using var body = JsonDocument.Parse(LastWrite);
+        if (body.RootElement.GetProperty("tenant_id").GetString() != State.TenantId) throw new Exception("Unexpected write tenant");
+        if (body.RootElement.GetProperty("expected_revision").GetInt32() != State.Revision) return new(HttpStatusCode.Conflict);
         var changes = body.RootElement.GetProperty("changes").Deserialize<DeviceProfileChanges>(json)!;
         var revision = State.Revision + 1;
         if (!Unconfirmed) { State = changes.Apply(State); State.Revision = revision; }

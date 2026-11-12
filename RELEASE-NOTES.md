@@ -6,6 +6,8 @@ The main wordmark is smaller and left-aligned at the bottom of navigation. The t
 
 Customer-portal links now open `https://app.fonado.ai/kunden/`. Existing package identity, account data, service capabilities and encrypted contact caches remain compatible with earlier installations. Microsoft dependency license/notice texts are included with hashes and source references.
 
+Availability now loads for accounts without previously saved availability settings. Windows accepts the server's explicit initial revision 0, while still rejecting missing/negative revisions and mismatched company/user identities. This fixes the repeated “Die Verfügbarkeit konnte nicht sicher geladen werden” error for that initial state.
+
 ## Scope and validation
 
 The native SDK is now a Fonado source build based on **Linphone SDK 5.5.39**, with a matching generated C# wrapper, MbedTLS 3.6.7 and RNNoise v0.2. It retains the required Windows audio/SRTP/Opus features and excludes unused video and Xerces-dependent native services. Source archives, build instructions/adapters and original component notices accompany the SDK delivery; see [SDK-SOURCES.md](SDK-SOURCES.md).

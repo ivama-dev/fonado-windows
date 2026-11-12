@@ -11,6 +11,8 @@ Der Button neben **Audio** zeigt das bestätigte aktive Anrufprofil. Sein Menü 
 
 Windows verwendet denselben Vertrag wie die Mac-App: `POST cloud/availability/read` liefert `settings.device_profiles`, `settings.active_profile_id`, die eigenen Geräte sowie optional `device_profiles_version: 1` und `profiles_available`. Die Antworten werden auf Schema, Benutzer, Firma, eindeutige Profile und Geräteauswahl geprüft. Ältere Antworten ohne Profilfelder werden als Standard interpretiert; eine fehlende Bestätigung der Telefonieserver-Unterstützung bleibt sichtbar.
 
+Ein noch nicht gespeicherter Verfügbarkeitsstand hat ausdrücklich `revision: 0`. Die Revision muss in der Antwort vorhanden und nicht negativ sein; beim ersten Schreiben wird `expected_revision: 0` verwendet. Schema-, Firmen-, Benutzer- und Geräteprüfungen gelten auch für diesen Anfangsstand.
+
 `POST cloud/availability/user` schreibt ausschließlich die geänderten Profilfelder mit `tenant_id` und `expected_revision`. Ein Wechsel schreibt nur `active_profile_id`. Bearbeiten und Löschen schreiben die vollständige Profilliste und die aktive ID gemeinsam. Status, Zeitpläne und frühere Arbeitsmodi werden dabei nicht überschrieben. Konflikte verlangen ein bewusstes Neuladen; Windows wiederholt sie nicht mit einer neuen Revision. Nach dem Schreiben liest Windows den bestätigten Stand erneut.
 
 Die bestehende Verfügbarkeitsabfrage übernimmt Änderungen anderer Fonado-Apps alle 15 Sekunden. Vor dem Öffnen des Profilmenüs und der Verwaltung wird zusätzlich aktualisiert. Abmeldung, Firmenwechsel und Beenden brechen Anfragen des alten Kontextes ab; ältere Revisionen überschreiben keinen neueren Stand. Profilanfragen blockieren weder den SIP-Worker noch die Gesprächssteuerung.

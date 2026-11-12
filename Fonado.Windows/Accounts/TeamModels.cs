@@ -62,7 +62,7 @@ public sealed partial class AvailabilitySnapshot
     public string TenantId { get; set; } = "";
     public string UserId { get; set; } = "";
     public string SelfUserId { get; set; } = "";
-    public int Revision { get; set; }
+    [JsonRequired] public int Revision { get; set; }
     public AvailabilitySettings Settings { get; set; } = new();
     public EffectiveAvailability Effective { get; set; } = new();
     public CallTeam[] CallTeams { get; set; } = [];
@@ -71,7 +71,7 @@ public sealed partial class AvailabilitySnapshot
     public AvailabilityCompany Company { get; set; } = new();
     public AvailabilitySnapshot Validate(string tenant, string user)
     {
-        if (SchemaVersion != 1 || TenantId != tenant || UserId != user || SelfUserId != user || Revision <= 0 ||
+        if (SchemaVersion != 1 || TenantId != tenant || UserId != user || SelfUserId != user || Revision < 0 ||
             Settings is null || Effective is null || Company is null || CallTeams is null || PersonalDevices is null || Schedules is null ||
             Settings.ModeDevices is null || Settings.ModeDevices.Any(p => p.Value is null) ||
             CallTeams.Any(t => t is null || string.IsNullOrEmpty(t.Id) || t.Members is null || t.Members.Any(m => m is null || m.Revision < 0)) ||
